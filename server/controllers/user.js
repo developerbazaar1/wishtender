@@ -1,0 +1,446 @@
+const { validationResult } = require("express-validator");
+const User = require("../models/user");
+const bcrypt = require("bcryptjs");
+const DeleteAccount = require('../models/deleteAccount'); 
+
+exports.getUser = (req, res, next) => {
+  User.findById(req.userId)
+    .select({
+      password: 0,
+      followers: 0,
+      agreeTermConditions: 0,
+      
+    })
+    .then((user) => {
+      if (!user) {
+        const error = new Error("User not found.");
+        error.statusCode = 404;
+        error.status = "error";
+        throw error;
+      }
+      res.status(200).json({
+        status: "success",
+        message: "Get User data successfully",
+        data: user,
+      });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
+exports.updateUser = async (req, res, next) => {
+  try {
+    const {
+      userName,
+      firstName,
+      lastName,
+      currency,
+      promotionCompany,
+      displayNameInPublicRankingPage,
+      surpriceContribution,
+      surpriceContributionAmount,
+      setAutoPost,
+    } = req.body;
+
+    // Check if the provided userName is already in use by another user
+    const userNameExists = await User.findOne({ userName: userName, _id: { $ne: req.userId } });
+
+    if (userNameExists) {
+      const userNameError = new Error('Username is already in use. Please choose a different one.');
+      userNameError.statusCode = 422;
+      throw userNameError;
+    }
+
+    const projection = {
+      email: 1,
+      status: 1,
+      userName: 1,
+      firstName: 1,
+      lastName: 1,
+      currency: 1,
+      promotionCompany: 1,
+      displayNameInPublicRankingPage: 1,
+      surpriceContribution: 1,
+      surpriceContributionAmount: 1,
+      setAutoPost: 1,
+      _id: 1,
+      role: 1,
+    };
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.userId,
+      {
+        $set: {
+          userName,
+          firstName,
+          lastName,
+          currency,
+          promotionCompany,
+          displayNameInPublicRankingPage,
+          surpriceContribution,
+          surpriceContributionAmount,
+          setAutoPost,
+        },
+      },
+      { new: true, projection } // Return the updated document
+    );
+
+    res.status(200).json({
+      status: 'success',
+      message: 'User data updated successfully',
+      data: updatedUser,
+    });
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+    }
+    next(error);
+  }
+};
+
+
+exports.changePassword = async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      const validationError = new Error("Validation failed.");
+      validationError.statusCode = 422;
+      validationError.status = "error";
+      validationError.data = errors.array();
+      throw validationError;
+    }
+
+    const { oldPassword, newPassword, confirmPassword } = req.body;
+
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      const userNotFoundError = new Error("User not found.");
+      userNotFoundError.statusCode = 404;
+      userNotFoundError.status = "error";
+      throw userNotFoundError;
+    }
+
+    if (newPassword !== confirmPassword) {
+      const passwordMatchError = new Error(
+        "New password and confirm password do not match"
+      );
+      passwordMatchError.statusCode = 401;
+      passwordMatchError.status = "error";
+      throw passwordMatchError;
+    }
+
+    const isOldPasswordCorrect = await bcrypt.compare(
+      oldPassword,
+      user.password
+    );
+
+    if (!isOldPasswordCorrect) {
+      const incorrectOldPasswordError = new Error(
+        "Please enter the correct old password!"
+      );
+      incorrectOldPasswordError.statusCode = 401;
+      incorrectOldPasswordError.status = "error";
+      throw incorrectOldPasswordError;
+    }
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, 12);
+    user.password = hashedNewPassword;
+    const savedUser = await user.save();
+
+    res.status(200).json({
+      status: "success",
+      message: "Password updated successfully",
+    });
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+    }
+    next(error);
+  }
+};
+
+exports.deleteUserAccount = async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      const validationError = new Error("Validation failed.");
+      validationError.statusCode = 422;
+      validationError.status = "error";
+      validationError.data = errors.array();
+      throw validationError;
+    }
+
+    const { password, reason } = req.body;
+
+    const user = await User.findById(req.userId);
+    let userId = req.userId;
+    if (!user) {
+      const userNotFoundError = new Error("User not found.");
+      userNotFoundError.statusCode = 404;
+      userNotFoundError.status = "error";
+      throw userNotFoundError;
+    }
+
+    const isOldPasswordCorrect = await bcrypt.compare(
+      password,
+      user.password
+    );
+
+    if (!isOldPasswordCorrect) {
+      const incorrectOldPasswordError = new Error(
+        "Please enter the correct password!"
+      );
+      incorrectOldPasswordError.statusCode = 401;
+      incorrectOldPasswordError.status = "error";
+      throw incorrectOldPasswordError;
+    }
+
+    // Save delete account details
+    const deleteAccount = new DeleteAccount({
+      userId: user._id,
+      email: user.email,
+      reason: reason,
+    });
+
+    await deleteAccount.save();
+
+    // Delete the user
+    await User.findByIdAndDelete(userId);
+
+    res.status(200).json({
+      status: "success",
+      message: "User deleted successfully",
+    });
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+    }
+    next(error);
+  }
+};
+
+
+
+exports.getFighters = async (req, res, next) => {
+  try {
+    // Define the query object
+    const query = {
+      role: 'fighter',
+      status: 'active',
+    };
+
+    // Check if a specific key is provided for random order
+    if (req.query.random) {
+      // If a random key is provided, fetch data in random order
+      const fighters = await User.aggregate([
+        { $match: { ...query, ...getSearchQuery(req.query.search) } },
+        { $sample: { size: 5 } },
+        {
+          $project: {
+            password: 0,
+            followers: 0,
+            agreeTermConditions: 0,
+          },
+        },
+        // Adjust the sample size as needed
+      ]);
+      res.status(200).json({
+        status: "success",
+        message: 'Get fighters data successfully',
+        data: fighters,
+      });
+    } else {
+      // If no random key, fetch data without random order
+      const fighters = await User.find({ ...query, ...getSearchQuery(req.query.search) })
+        .select('-password -followers -cart -agreeTermConditions');
+      res.status(200).json({
+        status: "success",
+        message: 'Get fighters data successfully',
+        data: fighters,
+      });
+    }
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
+// Helper function to generate search query
+const getSearchQuery = (search) => {
+  if (!search) {
+    return {};
+  }
+  const regex = new RegExp(search, 'i');
+  return {
+    $or: [
+      { firstName: regex },
+      { lastName: regex },
+      { userName: regex },
+      { promotionCompany: regex },
+    ],
+  };
+};
+
+
+
+// Follow or unfollow a fighter
+exports.manageFollow = async (req, res, next) => {
+  try {
+    const { fighterId, action } = req.params;
+    const userId = req.userId;
+
+    // Check if the fighter exists
+    const fighter = await User.findById(fighterId);
+    if (!fighter || fighter.role !== 'fighter' || fighter.status !== 'active') {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Fighter not found or not active.',
+      });
+    }
+
+    // Check if the user is not trying to perform an invalid action
+    if (action !== 'follow' && action !== 'unfollow') {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Invalid action. Use "follow" or "unfollow".',
+      });
+    }
+
+    // Check if the user is not trying to follow/unfollow themselves
+    if (fighterId === userId) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'You cannot follow/unfollow yourself.',
+      });
+    }
+
+    // Check if the user is already following/unfollowing the fighter
+    const isFollowing = fighter.followers.includes(userId);
+    if ((action === 'follow' && isFollowing) || (action === 'unfollow' && !isFollowing)) {
+      const actionMessage = action === 'follow' ? 'You are already following this fighter.' : 'You are not following this fighter.';
+      return res.status(400).json({
+        status: 'error',
+        message: actionMessage,
+      });
+    }
+
+    // Update the fighter's followers list based on the action
+    const updateQuery = action === 'follow' ? { $push: { followers: userId } } : { $pull: { followers: userId } };
+    await User.findByIdAndUpdate(fighterId, updateQuery);
+
+    const successMessage = action === 'follow' ? 'You are now following the fighter.' : 'You have unfollowed the fighter.';
+    res.status(200).json({
+      status: 'success',
+      message: successMessage,
+    });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
+
+// Fetch follow list of authenticated user
+exports.getFollowedFighters = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+
+    // Check if the user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'User not found.',
+      });
+    }
+
+    // Fetch the follow list of the authenticated user
+    const followList = await User.find({ followers: userId }).select('-password -cart -followers -agreeTermConditions'); // Adjust the fields you want to retrieve
+    
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Get followed fighters data successfully',
+      followList: followList,
+    });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
+
+exports.getFighter = async (req, res, next) => {
+    try {
+      const fighterId = req.params.fighterId;
+  
+      // Check if the fighter exists
+      const fighter = await User.findById(fighterId)
+        .select('-password -cart -followers -agreeTermConditions');
+  
+      if (!fighter) {
+        return res.status(404).json({
+          status: 'error',
+          message: 'Fighter not found.',
+        });
+      }
+  
+      res.status(200).json({
+        status: 'success',
+        message: 'Get fighter details successfully',
+        data: fighter,
+      });
+    } catch (err) {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    }
+  };
+
+
+  exports.updateUserSocialLinks = async (req, res, next) => {
+    try {
+      const userId = req.userId;
+      const { socialLinks } = req.body;
+
+      // Check if the user exists
+      const user = await User.findById(userId).select('-password -followers -cart -agreeTermConditions');
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+  
+      // Update social links only if provided in the request body
+      if (socialLinks) {
+        user.socialLinks = socialLinks;
+  
+        // Save the user with updated social links
+        await user.save();
+      }
+  
+      res.status(200).json({
+        status: 'success',
+        message: 'Social links updated successfully',
+        data: user,
+      });
+    } catch (error) {
+      if (!error.statusCode) {
+        error.statusCode = 500;
+      }
+      next(error);
+    }
+  };
+  
