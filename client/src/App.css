@@ -1856,6 +1856,22 @@ button.backbtn {
   background-color: #f2f2f2;
 }
 /* Add styles for LeftAside */
+
+.log-out-btn {
+  background-color: unset;
+  border: unset;
+  padding-right: 0px;
+  padding-left: 0px;
+  padding: 0;
+
+  color: #616161;
+  font-family: Urbanist;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  text-decoration: none;
+}
+
 .conta {
   height: 100%;
   /* width: 267px; */
@@ -4036,7 +4052,7 @@ span.cal-info {
 .term-policy {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-evenly;
   margin: 10px 0px;
   flex-wrap: wrap;
 }
@@ -4084,11 +4100,91 @@ span.cal-info {
   top: 50%;
   left: 48%;
 }
-/* .error-placeholder::placeholder {
-  color: rgb(210, 39, 39);
-  opacity: 1;
+
+/* css for not found page  start */
+
+.notFound-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  color: white;
+  animation: colorSlide 15s cubic-bezier(0.075, 0.82, 0.165, 1) infinite;
+
+  .second-container {
+    text-align: center;
+    h1,
+    h3 {
+      margin: 10px;
+      cursor: default;
+
+      .fade-in {
+        animation: fadeIn 2s ease infinite;
+      }
+    }
+
+    .return-toHome {
+      border: 1px solid white;
+      background: transparent;
+      outline: none;
+      padding: 10px 20px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: white;
+      text-transform: uppercase;
+      transition: background-color 200ms ease-in;
+      margin: 20px 0;
+
+      &:hover {
+        background-color: white;
+        color: #555;
+        cursor: pointer;
+      }
+    }
+  }
 }
 
-.error-placeholder::-ms-input-placeholder {
-  color: red;
-} */
+.title-h1 {
+  font-size: 8em;
+  transition: font-size 200ms ease-in-out;
+  border-bottom: 1px dashed white;
+
+  span#digit1 {
+    animation-delay: 200ms;
+  }
+  span#digit2 {
+    animation-delay: 300ms;
+  }
+  span#digit3 {
+    animation-delay: 400ms;
+  }
+}
+
+@keyframes colorSlide {
+  0% {
+    background-color: #152a68;
+  }
+  25% {
+    background-color: royalblue;
+  }
+  50% {
+    background-color: seagreen;
+  }
+  75% {
+    background-color: tomato;
+  }
+  100% {
+    background-color: #152a68;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* css for not found page  end */

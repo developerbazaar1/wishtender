@@ -1,18 +1,22 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { BackBTn, EmailIcon, LockIcon } from "../elements/SvgElements";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useForm } from "react-hook-form";
-import { api } from "../config/axiosConfig";
 import { AuthApi } from "../config/axiosUtils";
 import { useLoading } from "../features/loadingHooks";
-import CustomSpinner from "../components/Spinner";
 import { toast } from "react-toastify";
+import { useDispatch } from "react-redux";
+import { login } from "../features/authSlice";
 
 const SignIn = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const { globalLoading, startGloablLoading, stopGlobalLoading } = useLoading();
   const [showPassword, setShowPassword] = useState(false);
+  const dispatch = useDispatch();
 
+  const from = location.state?.from?.pathname || "/";
   const {
     register,
     watch,
@@ -26,13 +30,24 @@ const SignIn = () => {
 
   async function HandleSubmit(formData) {
     startGloablLoading();
-    console.log(formData);
     try {
       const res = await AuthApi.signin(formData);
-      console.log("res data", res);
+      let { status, data } = res;
+      console.log(data);
+      // console.log("response", data.user);
+      if (status === 200) {
+        toast.success(data.message);
+        dispatch(
+          login({
+            user: JSON.stringify(data.user),
+            token: JSON.stringify(data.token),
+          })
+        );
+        navigate(from, { replace: true });
+      }
     } catch (e) {
       console.log("error data", e);
-      if (e?.response.status === 401) {
+      if (e?.response?.status === 401) {
         toast.error(e?.response?.data?.message);
       }
       if (e?.response?.status === 500) {

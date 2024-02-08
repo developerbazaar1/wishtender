@@ -2,7 +2,6 @@ const { validationResult } = require("express-validator");
 const Goal = require("../models/goal");
 const User = require("../models/user");
 exports.create = async (req, res, next) => {
- 
   try {
     const errors = validationResult(req);
 
@@ -22,12 +21,13 @@ exports.create = async (req, res, next) => {
       throw error;
     }
 
-    const { goalName, goalPrice, goalType, goalCategory, goalPurchaseType } = req.body;
+    const { goalName, goalPrice, goalType, goalCategory, goalPurchaseType } =
+      req.body;
 
-     // Check if a goal with the same creator, status, and goal name already exists
+    // Check if a goal with the same creator, status, and goal name already exists
     const existingGoal = await Goal.findOne({
       creator: user._id,
-      status: 'active', // Adjust the status as needed
+      status: "active", // Adjust the status as needed
       goalName,
     });
 
@@ -49,8 +49,8 @@ exports.create = async (req, res, next) => {
       goalCategory,
       goalPurchaseType,
       goalImage: fileName, // Save the file name to the database
-      status:'active',
-      creator:user._id,
+      status: "active",
+      creator: user._id,
     });
 
     // Save the goal to the database
@@ -68,9 +68,6 @@ exports.create = async (req, res, next) => {
     next(error);
   }
 };
-
-
-
 
 exports.getGoalDetails = async (req, res, next) => {
   try {
@@ -101,10 +98,6 @@ exports.getGoalDetails = async (req, res, next) => {
   }
 };
 
-
-
-
-
 exports.getGoals = async (req, res, next) => {
   try {
     let userId;
@@ -127,24 +120,24 @@ exports.getGoals = async (req, res, next) => {
     // Define the query object
     const query = {
       creator: userId,
-      status: 'active',
+      status: "active",
     };
 
     // Add optional filters
-    if (req.query.category && req.query.category !== 'all') {
+    if (req.query.category && req.query.category !== "all") {
       query.goalCategory = req.query.category;
     }
 
     // Sort options
     let sortOption = {};
 
-    if (req.query.sort === 'most-recent') {
+    if (req.query.sort === "most-recent") {
       sortOption = { createdAt: -1 }; // Sort by most recent
-    } else if (req.query.sort === 'oldest') {
+    } else if (req.query.sort === "oldest") {
       sortOption = { createdAt: 1 }; // Sort by oldest
-    } else if (req.query.sort === 'price-high-to-low') {
+    } else if (req.query.sort === "price-high-to-low") {
       sortOption = { goalPrice: -1 }; // Sort by price high to low
-    } else if (req.query.sort === 'price-low-to-high') {
+    } else if (req.query.sort === "price-low-to-high") {
       sortOption = { goalPrice: 1 }; // Sort by price low to high
     } else {
       // Default sorting (e.g., show all data)

@@ -6,7 +6,9 @@ import {
   Route,
   createBrowserRouter,
   RouterProvider,
+  Navigate,
 } from "react-router-dom";
+import { Provider } from "react-redux";
 import LandingLog from "./Pages/LandingLog";
 import "bootstrap/dist/css/bootstrap.min.css";
 import FighterHome from "./Pages/FighterHome";
@@ -41,17 +43,38 @@ import CompanionSignup from "./Pages/CompanionSignup";
 import { signupLoader } from "./DataLoaders/authLoader";
 import SignIn from "./Pages/SignIn";
 import { LoadingProvider } from "./features/loadingHooks";
-
+import Unauthorize from "./Pages/Unauthorize";
+import RoleAuth from "./Layout/RoleAuth";
+import useAuth from "./services/useAuth";
+import FighterGaurd, { CompanionGaurd } from "./Layout/Gaurd";
+import NotFound from "./Pages/NotFound";
 function App() {
+  const auth = useAuth();
+  console.log(auth);
   const router = createBrowserRouter([
     {
-      path: "/",
-      element: <LandingLog />,
+      path: "/landing",
+      element:
+        auth.isLoggedIn && JSON.parse(auth?.token) ? (
+          <Navigate to={"/fighter"} replace={true} />
+        ) : (
+          <LandingLog />
+        ),
     },
     {
       path: "/signup",
-      element: <SignupLayout />,
+      element:
+        auth.isLoggedIn && JSON.parse(auth?.token) ? (
+          <Navigate to={"/fighter"} replace={true} />
+        ) : (
+          <SignupLayout />
+        ),
       children: [
+        {
+          index: true,
+          element: <Navigate to="fighter" replace={true} />,
+        },
+
         {
           path: "fighter",
           element: <FighterSignup />,
@@ -63,7 +86,10 @@ function App() {
       ],
     },
     {
-      path: "",
+      path: "/unauthorized",
+      element: <Unauthorize />,
+    },
+    {
       element: <SignupLayout />,
       children: [
         {
@@ -72,19 +98,50 @@ function App() {
         },
       ],
     },
+
     {
-      path: "",
-      element: <LayoutPage />,
+      path: "/",
+      element: <RoleAuth allowedRoles={[JSON?.parse(auth?.user)?.role]} />,
       children: [
         {
-          path: "/fighterhome",
-          element: <FighterHome />,
+          index: true,
+          element: <Navigate to="fighter" replace={true} />,
         },
         {
-          path: "/companionhome",
-          element: <CompanionHome />,
+          path: "fighter",
+          element: <LayoutPage />,
+          children: [
+            {
+              index: true,
+              element: (
+                <FighterGaurd
+                  components={<FighterHome />}
+                  role={JSON?.parse(auth?.user)?.role}
+                />
+              ),
+            },
+          ],
+        },
+        {
+          path: "companion",
+          element: <LayoutPage />,
+          children: [
+            {
+              index: true,
+              element: (
+                <CompanionGaurd
+                  components={<CompanionHome />}
+                  role={JSON?.parse(auth?.user)?.role}
+                />
+              ),
+            },
+          ],
         },
       ],
+    },
+    {
+      path: "*",
+      element: <NotFound />,
     },
   ]);
 
@@ -125,6 +182,7 @@ function App() {
     //     </Route>
     //   </Routes>
     // </BrowserRouter>
+
     <LoadingProvider>
       <RouterProvider router={router} />
     </LoadingProvider>

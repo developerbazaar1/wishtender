@@ -1,11 +1,11 @@
-import React from 'react'
+import React from "react";
 
 const CompanionHome = () => {
   return (
     <main className="main-content">
-    <h1>Welcome to Home</h1>
-  </main>
-  )
-}
+      <h1>This iscompanion home</h1>
+    </main>
+  );
+};
 
-export default CompanionHome
+export default CompanionHome;
