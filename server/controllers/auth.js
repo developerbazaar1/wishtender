@@ -24,6 +24,7 @@ exports.signup = (req, res, next) => {
           email: email,
           password: hashedPw,
           agreeTermConditions: agreeTermConditions,
+          role: "companion",
         });
         return user.save();
       })
@@ -48,7 +49,12 @@ exports.signup = (req, res, next) => {
 exports.login = async (req, res, next) => {
   try {
     let { email, password } = req.body;
-    const loadedUser = await User.findOne({ email: email });
+    let loadedUser = await User.findOne({ email: email }).select({
+      createdAt: 0,
+      updatedAt: 0,
+      __v: 0,
+      agreeTermConditions: 0,
+    });
     if (!loadedUser) {
       const error = new Error("A user with this email could not be found.");
       error.statusCode = 401;
@@ -70,13 +76,24 @@ exports.login = async (req, res, next) => {
       "somesupersecretsecret",
       { expiresIn: "100h" }
     );
+
+    loadedUser = await User.findOne({ email: email }).select({
+      createdAt: 0,
+      updatedAt: 0,
+      __v: 0,
+      agreeTermConditions: 0,
+      password: 0,
+    });
+
     res.status(200).json({
       status: "success",
       message: "User logged in successfully",
       token: token,
       userId: loadedUser._id.toString(),
+      user: loadedUser,
     });
   } catch (err) {
+    console.log(err);
     if (!err.statusCode) {
       err.statusCode = 500;
     }

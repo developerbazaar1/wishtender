@@ -66,7 +66,7 @@ const CompanionSignup = () => {
               type="button"
               //   onClick={handleBackButtonClick}
             >
-              <Link to="../..">{BackBTn}</Link>
+              <Link to="/landing">{BackBTn}</Link>
             </button>
           </span>
           {/* sign in content start from here  */}

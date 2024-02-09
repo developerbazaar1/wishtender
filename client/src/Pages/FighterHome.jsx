@@ -52,6 +52,7 @@ const MainContent = () => {
       id: "433",
     },
   ]);
+
   const onDragEnd = (result) => {
     const { destination, source } = result;
 

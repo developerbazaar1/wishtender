@@ -1,36 +1,14 @@
 import React, { useState } from "react";
 import BrandImg from "../img/brand-logo.png";
 import { Link } from "react-router-dom";
-import { FaEye } from "react-icons/fa";
-import { FaEyeSlash } from "react-icons/fa";
 import LoginFooterElement from "../elements/LoginFooterElement";
 import { BackBTn, BagIcon, RightBtn, UserIcon } from "../elements/SvgElements";
 const LandingLog = () => {
   const [showComment, setShowComment] = useState(true);
   const [showSignUp, setShowSignUp] = useState(false);
-  const [showSignIn, setShowSignIn] = useState(false);
-
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
   const handleSignUpClick = () => {
     setShowComment(false);
     setShowSignUp(true);
-  };
-
-  const handleSignInClick = () => {
-    setShowComment(false);
-    setShowSignIn(true);
-  };
-
-  const handleBackButtonClick = () => {
-    setShowSignUp(false);
-    setShowSignIn(false);
-    setShowComment(true);
   };
 
   return (
@@ -68,18 +46,14 @@ const LandingLog = () => {
                             {" "}
                             Sign up{" "}
                           </button>
-                          <button
-                            type="button"
-                            className="tab-btn-signup"
-                            onClick={handleSignInClick}
+                          <Link
+                            className="text-white text-decoration-none"
+                            to={`/signin`}
                           >
-                            <Link
-                              className="text-white text-decoration-none"
-                              to={`signin`}
-                            >
+                            <button type="button" className="tab-btn-signup">
                               Sign in
-                            </Link>
-                          </button>
+                            </button>
+                          </Link>
                         </div>
                       </div>
                     </div>
@@ -95,7 +69,10 @@ const LandingLog = () => {
                       <button
                         className="backbtn"
                         type="button"
-                        onClick={handleBackButtonClick}
+                        onClick={() => {
+                          setShowComment(true);
+                          setShowSignUp(false);
+                        }}
                       >
                         {BackBTn}
                       </button>
@@ -111,7 +88,7 @@ const LandingLog = () => {
                       <Link
                         className="main-container text-decoration-none"
                         state={{ role: "fighter" }}
-                        to="signup/companion"
+                        to="/signup/companion"
                       >
                         <div className="image-wrapper">
                           <div>{UserIcon}</div>
@@ -129,7 +106,7 @@ const LandingLog = () => {
                       <Link
                         className="main-container text-decoration-none"
                         state={{ role: "fighter" }}
-                        to="signup/fighter"
+                        to="/signup/fighter"
                       >
                         <div className="image-wrapper">
                           <div>{BagIcon}</div>

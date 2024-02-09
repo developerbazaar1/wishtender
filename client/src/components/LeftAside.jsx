@@ -7,6 +7,7 @@ import { IoNotificationsOutline } from "react-icons/io5";
 import { PiShoppingCartSimple } from "react-icons/pi";
 import { HiOutlineUser } from "react-icons/hi2";
 import { HiOutlineLogout } from "react-icons/hi";
+import { handleLogout } from "../utils/Helper";
 
 const LeftAside = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -190,8 +191,8 @@ const LeftAside = () => {
                     strokeLinejoin="round"
                   />
                   <path
-                    fill-rule="evenodd"
-                    clip-rule="evenodd"
+                    fillRule="evenodd"
+                    clipRule="evenodd"
                     d="M12.4842 12.506C15.128 12.506 17.2709 10.3622 17.2709 7.71835C17.2709 5.0745 15.128 2.93164 12.4842 2.93164C9.84032 2.93164 7.69644 5.0745 7.69644 7.71835C7.68754 10.3533 9.81651 12.4971 12.4504 12.506H12.4842Z"
                     stroke="#616161"
                     strokeWidth="1.42857"
@@ -203,12 +204,12 @@ const LeftAside = () => {
               </div>
             </NavLink>
             {/* link 07 */}
-            <NavLink to="/" className="my-link mb-2">
+            <button onClick={handleLogout} className="mb-2 log-out-btn">
               <div className="div-5">
                 <HiOutlineLogout size={23} />
                 <span>Logout</span>
               </div>
-            </NavLink>
+            </button>
           </div>
           <div className="left-nav-ft mt-2">
             <h6 className="head-pills">Stripe Balance: $XXX.XX</h6>
