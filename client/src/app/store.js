@@ -1,5 +1,6 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import authSlice from "../features/authSlice";
+import followedSlice from "../features/fetchFollowedSlice";
 import storage from "redux-persist/lib/storage";
 import {
   persistStore,
@@ -11,13 +12,18 @@ import {
   PURGE,
   REGISTER,
 } from "redux-persist";
+import cartSlice from "../features/cartSlice";
 
 const persistConfig = {
   key: "wishtender",
   storage,
 };
 
-const rootReducer = combineReducers({ auth: authSlice });
+const rootReducer = combineReducers({
+  auth: authSlice,
+  followed: followedSlice,
+  cart: cartSlice,
+});
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 

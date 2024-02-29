@@ -1,14 +1,131 @@
-import React from "react";
-import { Link, useNavigate } from "react-router-dom";
-// import Gloves from "../img/product-gloves.png";
-// import { ProgressBar } from "react-bootstrap";
-// import LocaProgressBar from "../components/ProgressBar";
-
-const GoalsDetails = () => {
+import React, { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { cartApi, fighterApi } from "../config/axiosUtils";
+import { useLoading } from "../features/loadingHooks";
+import { toast } from "react-toastify";
+import { castGoalData, imgBasePath } from "../utils/Helper";
+import { useDispatch } from "react-redux";
+import { setCart } from "../features/cartSlice";
+import {
+  GoalCrowdDescription,
+  GoalSingleDescription,
+  GoalSubDescription,
+} from "../components/GoalTypeDescription";
+import { useForm } from "react-hook-form";
+const GoalsDetails = ({ token }) => {
+  const { globalLoading, startGloablLoading, stopGlobalLoading } = useLoading();
+  const dispatch = useDispatch();
+  const {
+    register,
+    watch,
+    setError,
+    clearErrors,
+    formState: { errors },
+  } = useForm();
+  const [data, setData] = useState({
+    goals: {},
+    status: "",
+    message: "",
+  });
+  const { goalId } = useLocation().state;
   const navigate = useNavigate();
   const goBack = () => {
     navigate(-1);
   };
+
+  const loadGloadDetails = async () => {
+    startGloablLoading();
+    try {
+      const res = await fighterApi.fetchGoalDetails(token, goalId);
+      // console.log("goal data", res?.data);
+      if (res?.status === 200) {
+        setData({
+          goals: res?.data?.data,
+          status: "Successfully Loaded Data",
+          state: "succes",
+        });
+      }
+    } catch (error) {
+      setData({
+        goals: null,
+        status: "error",
+        state: "Error While loading the Goal",
+      });
+      if (error?.response?.status === 401) {
+        setData({
+          goals: null,
+          status: "error",
+          state: "error",
+        });
+        toast.error(error?.response?.data?.message);
+        return;
+      }
+      const { data, message, status } = error?.response?.data;
+      // console.log(message);
+      toast.error(message);
+    } finally {
+      stopGlobalLoading();
+    }
+  };
+
+  const addGoalToCart = async (type) => {
+    const contributionAmount = watch("amount");
+
+    // check and set the error if goal type is crowd and amount is not entred
+    if (data?.goals?.goalType === "crowd") {
+      if (
+        contributionAmount !== "0" &&
+        contributionAmount !== "" &&
+        !isNaN(contributionAmount)
+      ) {
+        clearErrors();
+      }
+      if (contributionAmount === "0" || contributionAmount === "") {
+        setError("amount", {
+          type: String,
+          message: "Amount must be greater than 0",
+        });
+      }
+
+      if (isNaN(contributionAmount)) {
+        setError("amount", {
+          type: String,
+          message: "Amount must be a number",
+        });
+        return;
+      }
+    }
+    startGloablLoading();
+    try {
+      const goalData = castGoalData(data?.goals, contributionAmount);
+      const res = await cartApi.addToCart(token, goalData);
+      if (res?.status === 200) {
+        toast.success(res?.data?.message);
+        dispatch(
+          setCart({
+            cart: res?.data?.cart,
+          })
+        );
+        if (type === "checkout") {
+          navigate("/fighter/cart");
+        } else {
+          navigate(-1);
+        }
+      }
+    } catch (e) {
+      // console.log(e);
+      toast.error(e?.response?.data?.message || e?.response?.data?.error);
+    } finally {
+      stopGlobalLoading();
+    }
+  };
+
+  useEffect(() => {
+    loadGloadDetails();
+  }, [goalId]);
+
+  // console.log(data?.goals);
+  console.log("This is Error", errors);
 
   return (
     <div className="main-content">
@@ -40,7 +157,7 @@ const GoalsDetails = () => {
           <div className="col-md-12 col-sm-12 col-xs-12 col-lg-12 text-center">
             <div className="page-head">
               <div className="card-head mb-3 mt-2">
-                <h5>Gloves</h5>
+                <h5>{data?.goals?.goalName}</h5>
               </div>
             </div>
           </div>
@@ -53,44 +170,43 @@ const GoalsDetails = () => {
             <img
               alt="loading"
               loading="lazy"
-              srcSet="
-            https://cdn.builder.io/api/v1/image/assets/TEMP/f22e6b993513ba97c00195f354d5981e73fa18350347ddf8c18432047532091e?apiKey=a05c6109e97c4bde98e757ca99d37c45&width=100   100w,
-            https://cdn.builder.io/api/v1/image/assets/TEMP/f22e6b993513ba97c00195f354d5981e73fa18350347ddf8c18432047532091e?apiKey=a05c6109e97c4bde98e757ca99d37c45&width=200   200w,
-            https://cdn.builder.io/api/v1/image/assets/TEMP/f22e6b993513ba97c00195f354d5981e73fa18350347ddf8c18432047532091e?apiKey=a05c6109e97c4bde98e757ca99d37c45&width=400   400w,
-            https://cdn.builder.io/api/v1/image/assets/TEMP/f22e6b993513ba97c00195f354d5981e73fa18350347ddf8c18432047532091e?apiKey=a05c6109e97c4bde98e757ca99d37c45&width=800   800w,
-            https://cdn.builder.io/api/v1/image/assets/TEMP/f22e6b993513ba97c00195f354d5981e73fa18350347ddf8c18432047532091e?apiKey=a05c6109e97c4bde98e757ca99d37c45&width=1200 1200w,
-            https://cdn.builder.io/api/v1/image/assets/TEMP/f22e6b993513ba97c00195f354d5981e73fa18350347ddf8c18432047532091e?apiKey=a05c6109e97c4bde98e757ca99d37c45&width=1600 1600w,
-            https://cdn.builder.io/api/v1/image/assets/TEMP/f22e6b993513ba97c00195f354d5981e73fa18350347ddf8c18432047532091e?apiKey=a05c6109e97c4bde98e757ca99d37c45&width=2000 2000w,
-            https://cdn.builder.io/api/v1/image/assets/TEMP/f22e6b993513ba97c00195f354d5981e73fa18350347ddf8c18432047532091e?apiKey=a05c6109e97c4bde98e757ca99d37c45&
-          "
+              src={`${imgBasePath}/${data?.goals?.goalImage}`}
               className="goal-detial-img"
             />
-            <div className="divii-3">
-              <div className="divii-4"></div>
-            </div>
-            <div className="divii-5">
-              <div className="divii-6">
-                <div className="divii-7">25%</div>
-                <div className="divii-8">Granted</div>
-              </div>
-              <div className="divii-9">
-                <div className="divii-10">Est.</div>
-                <div className="divii-11">CA $273.22</div>
-                <img
-                  loading="lazy"
-                  src="https://cdn.builder.io/api/v1/image/assets/TEMP/94203ab5c1b661a8ffc6efe0c835f37ccb3286c4d62fab45116c5b5a0dc10118?apiKey=a05c6109e97c4bde98e757ca99d37c45&"
-                  className="goal-detial-img-2"
-                  alt="loading"
-                />
-              </div>
-            </div>
-            <div className="divii-12">Amount: CA$50.00</div>
-            <Link onClick={goBack} className="divii-13">
-              Add to Cart and Continue Shopping
-            </Link>
-            <Link to="/cartfighter" className="divii-14">
-              Add to Cart and Checkout
-            </Link>
+            {/* if goalType is subscription  */}
+            {data?.goals?.goalType === "crowd" && (
+              <GoalCrowdDescription
+                goals={data?.goals}
+                register={register}
+                clearErrors={clearErrors}
+                errors={errors}
+              />
+            )}
+
+            {data?.goals?.goalType === "subscription" && (
+              <GoalSubDescription goals={data?.goals} />
+            )}
+
+            {data?.goals?.goalType === "single" && (
+              <GoalSingleDescription goals={data?.goals} />
+            )}
+
+            <button
+              onClick={() => addGoalToCart("continue")}
+              className="addGoalToCart"
+              disabled={globalLoading}
+            >
+              {globalLoading
+                ? "Loading..."
+                : "Add to Cart and Continue Shopping"}
+            </button>
+            <button
+              disabled={globalLoading}
+              className="addToCartCheckout"
+              onClick={() => addGoalToCart("checkout")}
+            >
+              {globalLoading ? "Loading..." : "Add to Cart and Checkout"}
+            </button>
           </div>
         </div>
       </section>

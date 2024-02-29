@@ -15,7 +15,7 @@ exports.signup = (req, res, next) => {
       throw error;
     }
 
-    let { email, password, agreeTermConditions } = req.body;
+    let { email, password, agreeTermConditions, role } = req.body;
 
     bcrypt
       .hash(password, 12)
@@ -24,7 +24,7 @@ exports.signup = (req, res, next) => {
           email: email,
           password: hashedPw,
           agreeTermConditions: agreeTermConditions,
-          role: "companion",
+          role: role,
         });
         return user.save();
       })
@@ -50,7 +50,6 @@ exports.login = async (req, res, next) => {
   try {
     let { email, password } = req.body;
     let loadedUser = await User.findOne({ email: email }).select({
-      createdAt: 0,
       updatedAt: 0,
       __v: 0,
       agreeTermConditions: 0,
@@ -78,7 +77,6 @@ exports.login = async (req, res, next) => {
     );
 
     loadedUser = await User.findOne({ email: email }).select({
-      createdAt: 0,
       updatedAt: 0,
       __v: 0,
       agreeTermConditions: 0,

@@ -1,19 +1,81 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import { useLoading } from "../features/loadingHooks";
+import { userApi } from "../config/axiosUtils";
+import useAuth from "../services/useAuth";
+import { toast } from "react-toastify";
+import { useForm } from "react-hook-form";
+import { imgBasePath } from "../utils/Helper";
 
 const SearchFighter = () => {
+  const { globalLoading, startGloablLoading, stopGlobalLoading } = useLoading();
+  const [searchParams, setSearchParams] = useSearchParams("");
+  const {
+    register,
+    formState: { errors },
+    handleSubmit,
+  } = useForm();
+  const [searchResult, setSearchResult] = useState({
+    data: [],
+    status: "",
+    message: "",
+  });
+  const token = JSON.parse(useAuth()?.token);
+  const fetchSearch = async () => {
+    startGloablLoading();
+    try {
+      const res = await userApi.searchFighter(
+        token,
+        searchParams.get("query") || ""
+      );
+      console.log(res);
+      if (res?.status === 200) {
+        setSearchResult({
+          data: res?.data?.data,
+          status: "success",
+          message: res?.data?.message,
+        });
+      }
+    } catch (e) {
+      if (e?.response?.status === 401) {
+        toast.error(e?.response?.data?.message);
+        setSearchResult({
+          data: {},
+          status: "error",
+          message: e?.response?.data?.message,
+        });
+      }
+      if (e?.response?.status === 500) {
+        toast.error(e?.response?.data?.message);
+        setSearchResult({
+          data: {},
+          status: "error",
+          message: e?.response?.data?.message,
+        });
+      }
+
+      console.log(e);
+    } finally {
+      stopGlobalLoading();
+    }
+  };
+
+  function handleQuery(data) {
+    console.log(data);
+    setSearchParams({ query: data?.search });
+  }
+
+  useEffect(() => {
+    fetchSearch();
+  }, [searchParams.get("query")]);
   return (
     <>
       <main className="main-content">
-        
         <section className="search-fighter-sec page-head">
           <div className="row">
             <div className="col-md-12 col-lg-12 col-sm-12 col-xs-12">
               <div className="back-page">
-                <Link
-                  to="/accountfighter"
-                  className="back-to-page-btn link-text"
-                >
+                <Link to={-1} className="back-to-page-btn link-text">
                   <svg
                     className="mb-1 mx-1"
                     xmlns="http://www.w3.org/2000/svg"
@@ -36,7 +98,7 @@ const SearchFighter = () => {
           <div className="row ">
             <div className="col-md-12 col-sm-12 col-xs-12 col-lg-12 text-center">
               <div className="page-head">
-                <div class="card-head mb-3 mt-2">
+                <div className="card-head mb-3 mt-2">
                   <h5>Search </h5>
                 </div>
               </div>
@@ -48,20 +110,16 @@ const SearchFighter = () => {
           <div className="row justify-content-center">
             <div className="col-md-11 col-sm-12 col-xs-12 col-lg-11">
               <div className="search-wrapper">
-                <form onSubmit={"#"}>
+                <form onSubmit={handleSubmit(handleQuery)}>
                   <div className="searchBar">
                     <input
-                      id="searchQueryInput"
+                      id="search"
                       type="text"
-                      name="searchQueryInput"
+                      name="search"
                       placeholder="Search"
-                      // onChange={"#"}
+                      {...register("search")}
                     />
-                    <button
-                      id="searchQuerySubmit"
-                      type="submit"
-                      name="searchQuerySubmit"
-                    >
+                    <button id="search-btn" type="search">
                       <svg
                         style={{ width: "24px", height: "24px" }}
                         viewBox="0 0 24 24"
@@ -76,99 +134,74 @@ const SearchFighter = () => {
                 </form>
               </div>
             </div>
-            
           </div>
         </section>
         <section className="search-content mt-3">
           <div className="row justify-content-center">
             <div className="col-md-11 col-lg-11 col-sm-12 col-xs-12">
-            <div className="row">
-            {/* Fighter content */}
-            <div className="col-md-11 col-sm-12 col-xs-12 col-lg-11">
-              <div className="fighter-content-area">
-                {/* fighter card 01 */}
-                <Link to="#" className="select-fighter ">
-                <div className="fighter-card mb-3">
-                  <img
-                    // loading="lazy"
-                    src="https://buffer.com/cdn-cgi/image/w=1000,fit=contain,q=90,f=auto/library/content/images/size/w1200/2023/10/free-images.jpg"
-                    className="fighter-image"
-                    alt="profile"
-                  />
-                  <div className="fighter-details">
-                    <div className="fighter-name">Ronald Richards</div>
-                    <div className="fighter-info">
-                      [Fighter’s Username] - [Fighter Promotion Company]
-                    </div>
+              <div className="row">
+                {/* Fighter content */}
+                <div className="col-md-11 col-sm-12 col-xs-12 col-lg-11">
+                  <div className="fighter-content-area">
+                    {/* fighter card 01 */}
+
+                    {searchResult?.data?.length === 0 && !globalLoading ? (
+                      <div className="text-center">
+                        NO Result Found With Search Query
+                      </div>
+                    ) : (
+                      ""
+                    )}
+
+                    {searchResult?.data?.map((fighter) => (
+                      <Link
+                        to={`/fighter/${fighter?.userName}`}
+                        className="select-fighter"
+                        key={fighter._id}
+                      >
+                        <div className="fighter-card mb-3">
+                          <img
+                            // loading="lazy"
+                            src={
+                              fighter?.profileImage
+                                ? `${imgBasePath}/${fighter.profileImage}`
+                                : "https://buffer.com/cdn-cgi/image/w=1000,fit=contain,q=90,f=auto/library/content/images/size/w1200/2023/10/free-images.jpg"
+                            }
+                            className="fighter-image"
+                            alt="profile"
+                          />
+                          <div className="fighter-details">
+                            <div className="fighter-name">
+                              {fighter?.firstName} {fighter?.lastName}
+                            </div>
+                            <div className="fighter-info">
+                              {fighter?.userName} {fighter?.promotionCompany}
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
                   </div>
                 </div>
-                </Link>
-                {/* fighter card 02 */}
-                <Link to="#" className="select-fighter ">
-                <div className="fighter-card mb-3">
-                  <img
-                    // loading="lazy"
-                    src="https://us.123rf.com/450wm/azovtcev161/azovtcev1611908/azovtcev161190800217/128455016-girl-sits-on-a-stump-in-the-autumn-park-with-a-leaves-in-her-hands-which-fall-from-the-trees.jpg"
-                    className="fighter-image"
-                    alt="profile"
-                  />
-                  <div className="fighter-details">
-                    <div className="fighter-name">Ronald Richards</div>
-                    <div className="fighter-info">
-                      [Fighter’s Username] - [Fighter Promotion Company]
-                    </div>
+                {/* Sidebar for alphabetical search */}
+                <div className="col-md-1 col-sm-12 col-xs-12 col-lg-1 f-bar">
+                  <div className="alphabetical-search">
+                    <ul className="alphabet-list">
+                      {Array.from({ length: 26 }, (_, i) =>
+                        String.fromCharCode(65 + i)
+                      ).map((letter) => (
+                        <li key={letter}>
+                          <span
+                            onClick={(e) => setSearchParams({ query: letter })}
+                          >
+                            {letter}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
-                </Link>
-                {/* fighter card 03 */}
-                <Link to="#" className="select-fighter ">
-                <div className="fighter-card mb-3">
-                  <img
-                    // loading="lazy"
-                    src="https://us.123rf.com/450wm/shadow7777/shadow77771810/shadow7777181000020/110896254-beautiful-brunette-woman-in-autumn-foliage-smiling.jpg?ver=6"
-                    className="fighter-image"
-                    alt="profile"
-                  />
-                  <div className="fighter-details">
-                    <div className="fighter-name">Ronald Richards</div>
-                    <div className="fighter-info">
-                      [Fighter’s Username] - [Fighter Promotion Company]
-                    </div>
-                  </div>
-                </div>
-                </Link>
-                {/* fighter card 04 */}
-                <Link to="#" className="select-fighter ">
-                <div className="fighter-card mb-3">
-                  <img
-                    // loading="lazy"
-                    src="https://t4.ftcdn.net/jpg/03/26/98/51/360_F_326985142_1aaKcEjMQW6ULp6oI9MYuv8lN9f8sFmj.jpg"
-                    className="fighter-image"
-                    alt="profile"
-                  />
-                  <div className="fighter-details">
-                    <div className="fighter-name">Ronald Richards</div>
-                    <div className="fighter-info">
-                      [Fighter’s Username] - [Fighter Promotion Company]
-                    </div>
-                  </div>
-                </div>
-                </Link>
               </div>
-            </div>
-             {/* Sidebar for alphabetical search */}
-             <div className="col-md-1 col-sm-12 col-xs-12 col-lg-1 f-bar">
-              <div className="alphabetical-search">
-                <ul className="alphabet-list">
-                  {Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i)).map(letter => (
-                    <li key={letter}>
-                      <a href={`#${letter}`}>{letter}</a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
             </div>
           </div>
         </section>
@@ -178,4 +211,3 @@ const SearchFighter = () => {
 };
 
 export default SearchFighter;
-
