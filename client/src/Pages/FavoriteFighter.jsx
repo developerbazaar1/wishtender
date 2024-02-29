@@ -1,33 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import FavoriteFither from "../img/userProfile.png";
-import FavoriteFither2 from "../img/about-image02.png";
-import FavoriteFither3 from "../img/Fighter3.png";
 import FavoriteFither4 from "../img/fighter4.png";
+import useFollowed from "../services/useFollowed";
 
 const FavoriteFighter = () => {
-  const fighters = [
-    {
-      img: FavoriteFither,
-      name: "Andrew Ainsley",
-      id: "evadg",
-    },
-    {
-      img: FavoriteFither2,
-      name: "Tracy Cortez",
-      id: "fdfdf",
-    },
-    {
-      img: FavoriteFither3,
-      name: "Shonie Carter",
-      id: "edec",
-    },
-    {
-      img: FavoriteFither4,
-      name: "Ronda Rousey",
-      id: "jreic",
-    },
-  ];
+  const followed = useFollowed()?.followed;
 
   return (
     <>
@@ -36,7 +13,7 @@ const FavoriteFighter = () => {
           <div className="row">
             <div className="col-md-12 col-lg-12 col-sm-12 col-xs-12">
               <div className="back-page">
-                <Link to="/fighterhome" className="back-to-page-btn link-text">
+                <Link to="/fighter" className="back-to-page-btn link-text">
                   <svg
                     className="mb-1 mx-1"
                     xmlns="http://www.w3.org/2000/svg"
@@ -60,7 +37,7 @@ const FavoriteFighter = () => {
             <div className="col-md-12 col-sm-12 col-xs-12 col-lg-12 text-center">
               <div className="page-head">
                 <div className="card-head mb-3 mt-2">
-                  <h5>Favorite Fighters</h5>
+                  <h5>favourite Fighters</h5>
                 </div>
               </div>
             </div>
@@ -68,12 +45,21 @@ const FavoriteFighter = () => {
         </section>
         <section>
           <div className="favorite-fighters-container">
-            {fighters?.map((fighter) => (
-              <Link className="favorite-fighter" to="/adrew" key={fighter?.id}>
+            {followed?.length === 0 && (
+              <div>You don't have any favourite fighter</div>
+            )}
+            {followed?.map((fighter) => (
+              <Link
+                className="favorite-fighter"
+                to={`/fighter/${fighter?.userName}`}
+                key={fighter?._id}
+              >
                 <div className="fighter-img-container">
-                  <img src={fighter?.img} alt="favorite" />
+                  <img src={FavoriteFither4} alt="favorite" />
                 </div>
-                <div className="fav-fighter-name">{fighter?.name}</div>
+                <div className="fav-fighter-name">
+                  {fighter?.firstName} {fighter?.lastName}
+                </div>
               </Link>
             ))}
           </div>

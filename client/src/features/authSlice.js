@@ -22,9 +22,8 @@ const authSlice = createSlice({
     },
 
     updateProfile: (state, action) => {
-      state.isLoggedIn = true;
-      state.user = action.payload.user;
-      state.token = action.payload.token;
+      console.log("user is updated");
+      return { ...state, user: action.payload.user };
     },
   },
 });

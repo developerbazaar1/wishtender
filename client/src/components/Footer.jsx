@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom/dist";
+import { ToastContainer } from "react-toastify";
 
 const Footer = () => {
   return (
@@ -52,6 +53,19 @@ const Footer = () => {
           {/* <li>How it works</li> */}
         </ul>
       </div>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
     </>
   );
 };

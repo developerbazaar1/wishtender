@@ -50,7 +50,7 @@
 .select-items {
   position: absolute;
   background-color: #fff;
-  top: 100%;
+  /* top: 100%; */
   left: 0;
   right: 0;
   z-index: 99;
@@ -211,12 +211,13 @@
 }
 .goal-detial-img {
   aspect-ratio: 1;
-  object-fit: contain;
+  object-fit: cover;
   object-position: center;
-  width: 280px;
+  width: 284px;
   overflow: hidden;
   align-self: center;
   max-width: 100%;
+  border-radius: 29px;
 }
 .divii-3 {
   border-radius: var(--Rectangle-Radius, 100px);

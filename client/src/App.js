@@ -1,14 +1,10 @@
 import "./App.css";
 import "./Responsive.css";
 import {
-  BrowserRouter,
-  Routes,
-  Route,
   createBrowserRouter,
   RouterProvider,
   Navigate,
 } from "react-router-dom";
-import { Provider } from "react-redux";
 import LandingLog from "./Pages/LandingLog";
 import "bootstrap/dist/css/bootstrap.min.css";
 import FighterHome from "./Pages/FighterHome";
@@ -21,7 +17,6 @@ import CartFighter from "./Pages/CartFighter";
 import AccountFighter from "./Pages/AccountFighter";
 import PaymentInfo from "./Pages/PaymentInfo";
 import TwitterPost from "./Pages/TwitterPost";
-import PasswordReset from "./Pages/PasswordReset";
 import LikeProfile from "./Pages/LikeProfile";
 import PayMethod from "./Pages/PayMethod";
 import About from "./Pages/About";
@@ -35,12 +30,9 @@ import AddGoal from "./Pages/AddGoal";
 import FavoriteFighter from "./Pages/FavoriteFighter";
 import OtherFighterProfile from "./Pages/OtherFighterProfile";
 import GoalsDetails from "./Pages/GoalsDetails";
-import Test from "./Test";
-
 import SignupLayout from "./Layout/SignupLayout";
 import FighterSignup from "./Pages/FighterSignup";
 import CompanionSignup from "./Pages/CompanionSignup";
-import { signupLoader } from "./DataLoaders/authLoader";
 import SignIn from "./Pages/SignIn";
 import { LoadingProvider } from "./features/loadingHooks";
 import Unauthorize from "./Pages/Unauthorize";
@@ -48,14 +40,26 @@ import RoleAuth from "./Layout/RoleAuth";
 import useAuth from "./services/useAuth";
 import FighterGaurd, { CompanionGaurd } from "./Layout/Gaurd";
 import NotFound from "./Pages/NotFound";
+import { useEffect, useState } from "react";
+import { fetchCategory, userApi } from "./config/axiosUtils";
+import { CategoryProvider } from "./features/categoryHooks";
+import { defaultCategory } from "./utils/Helper";
+import PasswordChange from "./Pages/PasswordChange";
+import { setFollowed } from "./features/fetchFollowedSlice";
+import { useDispatch } from "react-redux";
+import GoalActivity from "./components/GoalActivity";
+import SubscriptionActivity from "./components/SubscriptionActivity";
+import SurpriseActivity from "./components/SurpriseActivity";
 function App() {
+  const dispatch = useDispatch();
+  const [categories, setCategories] = useState([]);
   const auth = useAuth();
-  console.log(auth);
+
   const router = createBrowserRouter([
     {
       path: "/landing",
       element:
-        auth.isLoggedIn && JSON.parse(auth?.token) ? (
+        auth?.isLoggedIn && JSON.parse(auth?.token) ? (
           <Navigate to={"/fighter"} replace={true} />
         ) : (
           <LandingLog />
@@ -64,7 +68,7 @@ function App() {
     {
       path: "/signup",
       element:
-        auth.isLoggedIn && JSON.parse(auth?.token) ? (
+        auth?.isLoggedIn && JSON.parse(auth?.token) ? (
           <Navigate to={"/fighter"} replace={true} />
         ) : (
           <SignupLayout />
@@ -72,12 +76,13 @@ function App() {
       children: [
         {
           index: true,
-          element: <Navigate to="fighter" replace={true} />,
+          element: <Navigate to="fighter" replace={true} />, // this is work as default route
         },
 
         {
           path: "fighter",
           element: <FighterSignup />,
+          // loader:
         },
         {
           path: "companion",
@@ -105,7 +110,7 @@ function App() {
       children: [
         {
           index: true,
-          element: <Navigate to="fighter" replace={true} />,
+          element: <Navigate to="fighter" replace={true} />, // this is work as default route
         },
         {
           path: "fighter",
@@ -119,6 +124,67 @@ function App() {
                   role={JSON?.parse(auth?.user)?.role}
                 />
               ),
+              errorElement: <>{}</>,
+            },
+            {
+              path: "goal-detail",
+              element: <GoalsDetails token={JSON.parse(auth?.token)} />,
+            },
+            {
+              path: "account",
+              element: <AccountFighter />,
+            },
+            {
+              path: "change-password",
+              element: <PasswordChange />,
+            },
+            {
+              path: "mightlike",
+              element: <LikeProfile />,
+            },
+            {
+              path: ":userName",
+              element: <OtherFighterProfile />,
+            },
+            {
+              path: "favourite",
+              element: <FavoriteFighter />,
+            },
+            {
+              path: "cart",
+              element: <CartFighter />,
+            },
+            {
+              path: "search",
+              element: <SearchFighter />,
+            },
+            {
+              path: "create-goal",
+              element: <AddGoal />,
+            },
+            {
+              path: "activites",
+              element: <ActivitiesFighter />,
+              children: [
+                {
+                  path: "",
+                  element: <GoalActivity token={JSON.parse(auth?.token)} />,
+                },
+                {
+                  path: "subscriptions",
+                  element: (
+                    <SubscriptionActivity token={JSON.parse(auth?.token)} />
+                  ),
+                },
+                {
+                  path: "surprise",
+                  element: <SurpriseActivity token={JSON.parse(auth?.token)} />,
+                },
+              ],
+            },
+            {
+              path: "ranking",
+              element: <RankingFighter />,
             },
           ],
         },
@@ -144,6 +210,36 @@ function App() {
       element: <NotFound />,
     },
   ]);
+
+  useEffect(() => {
+    fetchCategory()
+      .then((res) => {
+        // console.log(res.data.category);
+        if (res?.status === 200 && res?.data?.category?.length === 0) {
+          setCategories(defaultCategory);
+        }
+        setCategories(res?.data?.category);
+        // setGloablCategory();
+      })
+      .catch((e) => {
+        setCategories(defaultCategory);
+      });
+
+    userApi
+      .getFollowedFighter(JSON.parse(auth?.token))
+      .then((res) => {
+        if (res?.status === 200) {
+          dispatch(
+            setFollowed({
+              followed: res?.data?.followList,
+            })
+          );
+        }
+      })
+      .catch((error) => {
+        // console.log(error);
+      });
+  }, []);
 
   return (
     // <BrowserRouter>
@@ -184,7 +280,9 @@ function App() {
     // </BrowserRouter>
 
     <LoadingProvider>
-      <RouterProvider router={router} />
+      <CategoryProvider categories={categories}>
+        <RouterProvider router={router} />
+      </CategoryProvider>
     </LoadingProvider>
   );
 }

@@ -1,7 +1,72 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import useAuth from "../services/useAuth";
+import { userApi } from "../config/axiosUtils";
+import { useLoading } from "../features/loadingHooks";
+import { Spinner } from "react-bootstrap";
+import useFollowed from "../services/useFollowed";
+import { useDispatch } from "react-redux";
+import { setFollowed } from "../features/fetchFollowedSlice";
+import { toast } from "react-toastify";
+import { imgBasePath } from "../utils/Helper";
 
 const LikeProfile = () => {
+  const { globalLoading, startGloablLoading, stopGlobalLoading } = useLoading();
+  const [youMightLike, setyouMIghtLike] = useState([]);
+  const token = JSON.parse(useAuth()?.token);
+  const following = useFollowed()?.followed;
+  const dispatch = useDispatch();
+  // console.log(following);
+  //function to get the random Fihter list
+  const FetchMightLike = async () => {
+    startGloablLoading();
+    try {
+      const res = await userApi.youMightLike(token);
+      console.log(res);
+      if (res?.status === 200) {
+        setyouMIghtLike(res?.data?.data);
+      }
+    } catch (e) {
+      console.log(e);
+    } finally {
+      stopGlobalLoading();
+    }
+  };
+
+  //function to follow and unfollow fighter
+  const followUnfollow = async (fighterId, action) => {
+    startGloablLoading();
+    try {
+      const res = await userApi.followUnfollow(token, fighterId, action);
+      console.log(res);
+      if (res?.status === 200) {
+        dispatch(
+          setFollowed({
+            followed: res?.data?.updatedFollower,
+          })
+        );
+        return toast.success(res?.data?.message);
+      }
+    } catch (e) {
+      console.log(e);
+      if (e?.response?.status === 401) {
+        toast.error("Something went wrong try later");
+      }
+      if (e?.response?.status === 500) {
+        toast.error(e?.response?.data?.message);
+      }
+      if (e?.response?.status === 400) {
+        toast.error(e?.response?.data?.message);
+      }
+    } finally {
+      stopGlobalLoading();
+    }
+  };
+
+  useEffect(() => {
+    FetchMightLike();
+  }, []);
+
   return (
     <>
       <main className="main-content">
@@ -9,10 +74,7 @@ const LikeProfile = () => {
           <div className="row">
             <div className="col-md-12 col-lg-12 col-sm-12 col-xs-12">
               <div className="back-page">
-                <Link
-                  to="/accountfighter"
-                  className="back-to-page-btn link-text"
-                >
+                <Link to={-1} className="back-to-page-btn link-text">
                   <svg
                     className="mb-1 mx-1"
                     xmlns="http://www.w3.org/2000/svg"
@@ -35,7 +97,7 @@ const LikeProfile = () => {
           <div className="row ">
             <div className="col-md-12 col-sm-12 col-xs-12 col-lg-12 text-center">
               <div className="page-head">
-                <div class="card-head mb-3 mt-2">
+                <div className="card-head mb-3 mt-2">
                   <h5>You Might Like </h5>
                 </div>
               </div>
@@ -44,128 +106,80 @@ const LikeProfile = () => {
         </section>
         {/* profile like section start from here */}
         <section className="like-profiles">
-          <div class="row justify-content-center">
+          <div className="row justify-content-center">
             <div className="col-md-11 col-lg-11 col-sm-12 col-xs-12">
               {/* likes profile content start from here */}
               <div className="like-profiles-content">
                 {/* likes profile card list */}
                 <div className="like-profiles-card">
                   {/* profile card 01 */}
-                  <Link to="#" className="select-fighter">
-                    <div className="fighter-card mb-3 ">
-                      <img
-                        // loading="lazy"
-                        src="https://images.pexels.com/photos/1559486/pexels-photo-1559486.jpeg?cs=srgb&dl=pexels-jack-winbow-1559486.jpg&fm=jpg"
-                        className="fighter-image"
-                        alt="profile"
-                      />
-                      <div className="fighter-details">
-                        <div className="fighter-name">Ronald Richards</div>
-                        <div className="fighter-info">
-                          @mushtar565266 - [Fighter Promotion Company]
+
+                  {youMightLike?.map((element) => (
+                    <div className="select-fighter" key={element?._id}>
+                      <div className="fighter-card mb-3 ">
+                        <img
+                          // loading="lazy"
+                          src={
+                            element?.profileImage
+                              ? `${imgBasePath}/${element?.profileImage}`
+                              : "https://images.pexels.com/photos/1559486/pexels-photo-1559486.jpeg?cs=srgb&dl=pexels-jack-winbow-1559486.jpg&fm=jpg"
+                          }
+                          className="fighter-image"
+                          alt="profile"
+                        />
+                        <Link
+                          className="fighter-details text-decoration-none"
+                          to={`/fighter/${element?.userName}`}
+                        >
+                          <div className="fighter-name">
+                            {element?.firstName} {element?.lastName}
+                          </div>
+                          <div className="fighter-info">
+                            {element?.userName} - [{" "}
+                            {element?.promotionCompany ||
+                              "Fighter Promotion Company"}
+                            ]
+                          </div>
+                        </Link>
+                        <div className="follow-btn align-self-center">
+                          {following?.some(
+                            (localElement) => localElement?._id === element?._id
+                          ) ? (
+                            <button
+                              disabled={globalLoading}
+                              className="follow-profile-btn"
+                              onClick={() =>
+                                followUnfollow(element?._id, "unfollow")
+                              }
+                            >
+                              Following
+                            </button>
+                          ) : (
+                            <button
+                              disabled={globalLoading}
+                              className="follow-profile-btn"
+                              onClick={() =>
+                                followUnfollow(element?._id, "follow")
+                              }
+                            >
+                              Follow
+                            </button>
+                          )}
                         </div>
                       </div>
-                      <div className="follow-btn align-self-center">
-                        <Link to="#" className="follow-profile-btn">
-                          Follow
-                        </Link>
-                      </div>
                     </div>
-                  </Link>
-                  {/* profile card 02 */}
-                  <Link to="#" className="select-fighter">
-                    <div className="fighter-card mb-3 ">
-                      <img
-                        // loading="lazy"
-                        src="https://images.pexels.com/photos/1559486/pexels-photo-1559486.jpeg?cs=srgb&dl=pexels-jack-winbow-1559486.jpg&fm=jpg"
-                        className="fighter-image"
-                        alt="profile"
-                      />
-                      <div className="fighter-details">
-                        <div className="fighter-name">Ronald Richards</div>
-                        <div className="fighter-info">
-                          @mushtar565266 - [Fighter Promotion Company]
-                        </div>
-                      </div>
-                      <div className="follow-btn align-self-center">
-                        <Link to="#" className="follow-profile-btn">
-                          Follow
-                        </Link>
-                      </div>
-                    </div>
-                  </Link>
-                  {/* profile card 03 */}
-                  <Link to="#" className="select-fighter">
-                    <div className="fighter-card mb-3 ">
-                      <img
-                        // loading="lazy"
-                        src="https://images.pexels.com/photos/1559486/pexels-photo-1559486.jpeg?cs=srgb&dl=pexels-jack-winbow-1559486.jpg&fm=jpg"
-                        className="fighter-image"
-                        alt="profile"
-                      />
-                      <div className="fighter-details">
-                        <div className="fighter-name">Ronald Richards</div>
-                        <div className="fighter-info">
-                          @mushtar565266 - [Fighter Promotion Company]
-                        </div>
-                      </div>
-                      <div className="follow-btn align-self-center">
-                        <Link to="#" className="follow-profile-btn">
-                          Follow
-                        </Link>
-                      </div>
-                    </div>
-                  </Link>
-                  {/* profile card 04 */}
-                  <Link to="#" className="select-fighter">
-                    <div className="fighter-card mb-3 ">
-                      <img
-                        // loading="lazy"
-                        src="https://images.pexels.com/photos/1559486/pexels-photo-1559486.jpeg?cs=srgb&dl=pexels-jack-winbow-1559486.jpg&fm=jpg"
-                        className="fighter-image"
-                        alt="profile"
-                      />
-                      <div className="fighter-details">
-                        <div className="fighter-name">Ronald Richards</div>
-                        <div className="fighter-info">
-                          @mushtar565266 - [Fighter Promotion Company]
-                        </div>
-                      </div>
-                      <div className="follow-btn align-self-center">
-                        <Link to="#" className="follow-profile-btn">
-                          Follow
-                        </Link>
-                      </div>
-                    </div>
-                  </Link>
-                  {/* profile card 05 */}
-                  <Link to="#" className="select-fighter">
-                    <div className="fighter-card mb-3 ">
-                      <img
-                        // loading="lazy"
-                        src="https://images.pexels.com/photos/1559486/pexels-photo-1559486.jpeg?cs=srgb&dl=pexels-jack-winbow-1559486.jpg&fm=jpg"
-                        className="fighter-image"
-                        alt="profile"
-                      />
-                      <div className="fighter-details">
-                        <div className="fighter-name">Ronald Richards</div>
-                        <div className="fighter-info">
-                          @mushtar565266 - [Fighter Promotion Company]
-                        </div>
-                      </div>
-                      <div className="follow-btn align-self-center">
-                        <Link to="#" className="follow-profile-btn">
-                          Follow
-                        </Link>
-                      </div>
-                    </div>
-                  </Link>
+                  ))}
                 </div>
               </div>
             </div>
           </div>
         </section>
-      </main>
+      </main>{" "}
+      {globalLoading && (
+        <div className="fighter-home-spinner">
+          <Spinner animation="border" variant="danger" />
+        </div>
+      )}
     </>
   );
 };

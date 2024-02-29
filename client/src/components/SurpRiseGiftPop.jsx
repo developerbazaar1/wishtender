@@ -1,7 +1,11 @@
 import React from "react";
 import Modal from "react-bootstrap/Modal";
 
-const SurpRiseGiftPop = ({ showsurpriseModal, setshowsurpriseModal }) => {
+const SurpRiseGiftPop = ({
+  showsurpriseModal,
+  setshowsurpriseModal,
+  register,
+}) => {
   const handleCloseSurpriceModal = () => {
     setshowsurpriseModal(false);
   };
@@ -23,6 +27,7 @@ const SurpRiseGiftPop = ({ showsurpriseModal, setshowsurpriseModal }) => {
                   type="checkbox"
                   name="surprisecheck"
                   id="surprisecheck"
+                  {...register("surpriceContribution")}
                 />
                 <label
                   htmlFor="surprisecheck"
@@ -43,6 +48,12 @@ const SurpRiseGiftPop = ({ showsurpriseModal, setshowsurpriseModal }) => {
                   name="minammount"
                   id="minammount"
                   placeholder="$ 0.00"
+                  {...register("surpriceContributionAmount", {
+                    pattern: {
+                      value: /^[1-9][0-9]*$/,
+                      message: "Please Enter a valid Amount",
+                    },
+                  })}
                 />
               </div>
             </div>

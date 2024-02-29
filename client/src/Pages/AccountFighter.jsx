@@ -1,13 +1,77 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import SurpRiseGiftPop from "../components/SurpRiseGiftPop";
 import AccountDeleteModal from "../components/AccountDeleteModal";
 import XsetupModal from "../components/XsetupModal";
+import {
+  imageIcon,
+  rightIconSurprise,
+  twitterIcon,
+} from "../elements/SvgElements";
+import { useForm } from "react-hook-form";
+import useAuth from "../services/useAuth";
+import { userApi } from "../config/axiosUtils";
+import { useLoading } from "../features/loadingHooks";
+import { toast } from "react-toastify";
+import { useDispatch } from "react-redux";
+import { updateProfile } from "../features/authSlice";
+import { Spinner } from "react-bootstrap";
+import { castUpdateFormData, imgBasePath } from "../utils/Helper";
 
 const AccountFighter = () => {
+  const dispatch = useDispatch();
   const [showsurpriseModal, setshowsurpriseModal] = useState(false);
   const [showPasswordModal, setshowPasswordModal] = useState(false);
   const [showTwiterModaldModal, setshowTwiterModaldModal] = useState(false);
+  const { globalLoading, startGloablLoading, stopGlobalLoading } = useLoading();
+  const [selectedImage, setSelectedImage] = useState(null);
+  const user = JSON.parse(useAuth()?.user);
+  const token = JSON.parse(useAuth()?.token);
+  const {
+    register,
+    watch,
+    formState: { errors },
+    handleSubmit,
+  } = useForm({
+    defaultValues: user,
+  });
+
+  const handeProfileUpdate = async (data) => {
+    // console.log(data);
+    const formData = castUpdateFormData(data);
+
+    // return;
+    startGloablLoading();
+    try {
+      const res = await userApi.updateProfile(formData, token);
+      console.log(res?.data?.data);
+      // return;
+      if (res?.status === 200) {
+        toast.success(res?.data?.message);
+        dispatch(
+          updateProfile({
+            user: JSON.stringify(res?.data?.data),
+          })
+        );
+      }
+    } catch (e) {
+      console.log(e);
+      if (e?.response?.status === 401) {
+        toast.error(e?.response?.data?.message);
+      }
+      if (e?.response?.status === 500) {
+        toast.error(e?.response?.data?.message);
+      }
+    } finally {
+      stopGlobalLoading();
+    }
+  };
+
+  useEffect(() => {
+    if (watch("newProfileImage") && watch("newProfileImage").length > 0) {
+      setSelectedImage(URL.createObjectURL(watch("newProfileImage")[0]));
+    }
+  }, [watch("newProfileImage")]);
 
   return (
     <main className="main-content">
@@ -43,23 +107,31 @@ const AccountFighter = () => {
         <div className="row justify-content-center">
           <div className="col-md-10 col-sm-12 col-xs-12 col-lg-10 text left">
             {/* account form start from here */}
-            <form className="acc-form">
+            <form
+              className="acc-form"
+              onSubmit={handleSubmit(handeProfileUpdate)}
+            >
               {/* for image wrapper */}
               <div className="file-wrapper">
-                <input type="file" id="fileInput" className="hidden-input" />
+                <input
+                  type="file"
+                  id="fileInput"
+                  className="hidden-input"
+                  multiple={false}
+                  {...register("newProfileImage")}
+                  // onChange={handleImageChange}
+                />
                 <label htmlFor="fileInput" className="file-upload">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="32"
-                    height="32"
-                    viewBox="0 0 32 32"
-                    fill="none"
-                  >
-                    <path
-                      d="M20.6032 5.12349C21.3584 5.42409 21.8925 5.96591 22.3712 6.76026L22.5289 7.03441L23.1141 8.15649L23.1333 8.18783L23.1508 8.2151L23.2005 8.28305C23.4671 8.57355 23.9133 8.74905 24.2078 8.74905C26.9055 8.74905 29.1089 10.8677 29.244 13.5311L29.2505 13.7905V21.2892C29.2505 24.7467 26.52 27.5683 23.0983 27.7144L22.8194 27.7203H9.80177C6.34335 27.7203 3.52261 24.9901 3.37655 21.5681L3.37061 21.2892V13.7905C3.37061 11.0065 5.6286 8.74905 8.41331 8.74905C8.70675 8.74905 9.15358 8.5733 9.42061 8.28305L9.42981 8.2722L9.44132 8.25712L9.50787 8.15504L10.0914 7.03476C10.6115 6.08947 11.1773 5.45755 12.0169 5.12337C13.5555 4.51159 19.0659 4.51159 20.6032 5.12349ZM12.7344 6.92689C12.4479 7.04091 12.1886 7.30484 11.9118 7.76238L11.792 7.97046L11.2939 8.93332L11.1714 9.15515C11.0691 9.32534 10.9667 9.46901 10.8498 9.59635C10.2541 10.2439 9.39864 10.618 8.63823 10.6806L8.41331 10.69L8.20097 10.6972C6.65732 10.8016 5.42316 12.0354 5.31876 13.5782L5.3116 13.7905V21.2892C5.3116 23.686 7.19015 25.6448 9.5554 25.7727L9.80177 25.7793H22.8194C25.2157 25.7793 27.1749 23.9 27.3029 21.5354L27.3095 21.2892V13.7905C27.3095 12.1499 26.034 10.8063 24.4202 10.6972L24.2078 10.69L23.9825 10.6806C23.221 10.618 22.3655 10.2438 21.7705 9.59549C21.6552 9.46984 21.5534 9.32719 21.4517 9.15843L21.4272 9.1166L21.3981 9.06464L21.2479 8.78288L20.8287 7.97081C20.5457 7.45696 20.2866 7.14291 20.0067 6.98509L19.8854 6.92689L19.731 6.87556C18.3993 6.49915 13.7671 6.51626 12.7344 6.92689ZM16.3102 12.6863C19.1184 12.6863 21.3943 14.9622 21.3943 17.7704C21.3943 20.5786 19.1184 22.8545 16.3102 22.8545C13.5019 22.8545 11.2261 20.5786 11.2261 17.7704C11.2261 14.9622 13.5019 12.6863 16.3102 12.6863ZM16.3102 14.6273C14.5739 14.6273 13.1671 16.0341 13.1671 17.7704C13.1671 19.5067 14.5739 20.9135 16.3102 20.9135C18.0464 20.9135 19.4533 19.5067 19.4533 17.7704C19.4533 16.0341 18.0464 14.6273 16.3102 14.6273ZM23.4331 11.7818C24.1478 11.7818 24.7271 12.3611 24.7271 13.0758C24.7271 13.7394 24.2276 14.2863 23.584 14.3611L23.4331 14.3698C22.7068 14.3698 22.1275 13.7904 22.1275 13.0758C22.1275 12.4122 22.627 11.8652 23.2706 11.7905L23.4331 11.7818Z"
-                      fill="#616161"
-                    />
-                  </svg>
+                  <img
+                    src={
+                      selectedImage
+                        ? selectedImage
+                        : `${imgBasePath}/${user?.profileImage}`
+                    }
+                    alt="profile-pic"
+                    className="profile-image"
+                  />
+                  {imageIcon}
                 </label>
               </div>
               {/* for input 01 for username */}
@@ -70,10 +142,20 @@ const AccountFighter = () => {
                 <input
                   type="text"
                   id="user-name"
-                  className="form-control"
+                  className={`form-control ${
+                    errors?.userName ? "error-border-profile" : null
+                  }`}
                   placeholder="Enter your username"
-                  required
+                  {...register("userName", {
+                    required: {
+                      value: true,
+                      message: "User is Required",
+                    },
+                  })}
                 />
+                <p className="profile-error-message">
+                  {errors?.userName?.message}
+                </p>
               </div>
               {/* form input 02 for first name  */}
               <div className="form-group text-left mb-2">
@@ -83,10 +165,25 @@ const AccountFighter = () => {
                 <input
                   type="text"
                   id="first-name"
-                  className="form-control"
+                  className={`form-control ${
+                    errors?.firstName ? "error-border-profile" : null
+                  }`}
                   placeholder="Enter your first name"
-                  required
+                  {...register("firstName", {
+                    required: {
+                      value: true,
+                      message: "First Name is Required",
+                    },
+                    pattern: {
+                      value: /^[a-zA-Z]+$/,
+                      message: "Please Enter a Valid FirstName",
+                    },
+                  })}
                 />
+
+                <p className="profile-error-message">
+                  {errors?.firstName?.message}
+                </p>
               </div>
               {/* input 03 for last name*/}
               <div className="form-group text-left mb-2">
@@ -96,10 +193,15 @@ const AccountFighter = () => {
                 <input
                   type="text"
                   id="last-name"
-                  className="form-control"
+                  className={`form-control ${
+                    errors?.lastName ? "error-border-profile" : null
+                  }`}
                   placeholder="Enter your last name"
-                  required
+                  {...register("lastName")}
                 />
+                <p className="profile-error-message">
+                  {errors?.lastName?.message}
+                </p>
               </div>
               {/* input 04 for email address */}
               <div className="form-group text-left mb-2">
@@ -111,7 +213,8 @@ const AccountFighter = () => {
                   id="user-email"
                   className="form-control"
                   placeholder="Enter your email"
-                  required
+                  readOnly
+                  {...register("email")}
                 />
               </div>
               {/* input 05 for select currency */}
@@ -121,8 +224,16 @@ const AccountFighter = () => {
                 </label>
                 <div className="select-group h-40 select-currency">
                   <select
-                    className="form-control"
                     id="s-currency dropdown-toggle"
+                    {...register("currency", {
+                      required: {
+                        value: true,
+                        message: "Please Select a Currency",
+                      },
+                    })}
+                    className={`form-control ${
+                      errors?.currency ? "error-border-profile" : null
+                    }`}
                   >
                     <option value="">Select Currency (all currencies) </option>
                     <option value="CAD">CAD</option>
@@ -131,6 +242,10 @@ const AccountFighter = () => {
                     <option value="Pound">Pound</option>
                     <option value="Dirham">Dirham</option>
                   </select>
+
+                  <p className="profile-error-message">
+                    {errors?.currency?.message}
+                  </p>
                 </div>
               </div>
               {/* input 06 for fight prootion company */}
@@ -139,27 +254,51 @@ const AccountFighter = () => {
                   Select Fight Promotion Company :
                 </label>
                 <div className="select-group h-40 select-promotion">
-                  <select className="form-control" id="s-currency">
+                  <select
+                    className={`form-control ${
+                      errors?.promotionCompany ? "error-border-profile" : null
+                    }`}
+                    id="s-currency"
+                    {...register("promotionCompany", {
+                      required: {
+                        value: true,
+                        message: "Fight Promotion Company is Required",
+                      },
+                    })}
+                  >
                     <option value="">Select Fight Promotion Company </option>
-                    <option value="CAD">UFC</option>
-                    <option value="USD">Bellator</option>
-                    <option value="EURO">One FC</option>
-                    <option value="Pound">PFL</option>
-                    <option value="Dirham">Asolute Championship Akhmat</option>
-                    <option value="Dirham">AMC Fight Night</option>
-                    <option value="Dirham">RIZIN Fighting Federation</option>
-                    <option value="Dirham">Invicta Fight Championship </option>
-                    <option value="Dirham">Pancrase </option>
-                    <option value="Dirham">KSW</option>
-                    <option value="Dirham">M-1 Global</option>
-                    <option value="Dirham">Legacy Fighting Alliance</option>
-                    <option value="Dirham">Unified MMA</option>
-                    <option value="Dirham">
+                    <option value="UFC">UFC</option>
+                    <option value="Bellator">Bellator</option>
+                    <option value="One FC">One FC</option>
+                    <option value="PFL">PFL</option>
+                    <option value="Asolute Championship Akhmat">
+                      Asolute Championship Akhmat
+                    </option>
+                    <option value="AMC Fight Night">AMC Fight Night</option>
+                    <option value="RIZIN Fighting Federation">
+                      RIZIN Fighting Federation
+                    </option>
+                    <option value="Invicta Fight Championship">
+                      Invicta Fight Championship{" "}
+                    </option>
+                    <option value="Pancrase">Pancrase </option>
+                    <option value="KSW">KSW</option>
+                    <option value="M-1 Global">M-1 Global</option>
+                    <option value="Legacy Fighting Alliance">
+                      Legacy Fighting Alliance
+                    </option>
+                    <option value="Unified MMA">Unified MMA</option>
+                    <option value="Cage Warriors Fight Championship">
                       Cage Warriors Fight Championship
                     </option>
-                    <option value="Dirham">Rumble In The Cage</option>
-                    <option value="Dirham">Other</option>
+                    <option value="Rumble In The Cage">
+                      Rumble In The Cage
+                    </option>
+                    <option value="Other">Other</option>
                   </select>
+                  <p className="profile-error-message">
+                    {errors?.promotionCompany?.message}
+                  </p>
                 </div>
               </div>
               {/* display my name in public ranking page */}
@@ -173,6 +312,7 @@ const AccountFighter = () => {
                       type="checkbox"
                       className="socialink"
                       id="displayName"
+                      {...register("displayNameInPublicRankingPage")}
                     />
                     <label
                       className="socialLablel"
@@ -193,20 +333,7 @@ const AccountFighter = () => {
                     Surprise Gift Settings
                   </label>
 
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="26"
-                    height="26"
-                    viewBox="0 0 26 26"
-                    fill="none"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      clipRule="evenodd"
-                      d="M10.3421 7.36536C9.92633 6.94958 9.92633 6.27547 10.3421 5.85969C10.7579 5.44391 11.432 5.44391 11.8478 5.85969L18.2358 12.2477C18.6516 12.6635 18.6516 13.3376 18.2358 13.7534L11.8478 20.1414C11.432 20.5572 10.7579 20.5572 10.3421 20.1414C9.92633 19.7257 9.92633 19.0516 10.3421 18.6358L15.9773 13.0006L10.3421 7.36536Z"
-                      fill="#616161"
-                    />
-                  </svg>
+                  {rightIconSurprise}
                 </div>
               </div>
 
@@ -218,22 +345,16 @@ const AccountFighter = () => {
                     onClick={() => setshowTwiterModaldModal(true)}
                   >
                     Setup Auto &nbsp;
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="13"
-                      height="14"
-                      viewBox="0 0 13 14"
-                      fill="none"
-                    >
-                      <path
-                        d="M7.73681 6.00469L12.5763 0.5H11.4294L7.22739 5.27953L3.8711 0.5H0L5.07532 7.72759L0 13.5H1.14692L5.58454 8.45265L9.1289 13.5H13L7.7365 6.00469H7.73681ZM6.16599 7.79117L5.65169 7.0715L1.56013 1.3448H3.32172L6.62352 5.9665L7.13771 6.68617L11.4299 12.6936H9.66852L6.16599 7.79148V7.79117Z"
-                        fill="black"
-                      />
-                    </svg>
+                    {twitterIcon}
                     &nbsp; Post
                   </label>
                   <div className="right">
-                    <input type="checkbox" className="socialink" id="xpost" />
+                    <input
+                      type="checkbox"
+                      className="socialink"
+                      id="xpost"
+                      {...register("setAutoPost")}
+                    />
                     <label className="socialLablel" htmlFor="xpost"></label>
                   </div>
                 </div>
@@ -249,7 +370,7 @@ const AccountFighter = () => {
                 {/* btn for change password */}
                 <div className="btn-payment mb-5">
                   <Link
-                    to="/passwodreset"
+                    to="/fighter/change-password"
                     className="btn-pay sub-bt-cp link-text "
                   >
                     Change Password
@@ -258,8 +379,12 @@ const AccountFighter = () => {
               </div>
               {/* submit form button */}
               <div className="f-submit">
-                <button type="submit" className="acs-form">
-                  Submit
+                <button
+                  type="submit"
+                  className="acs-form"
+                  disabled={globalLoading}
+                >
+                  {!globalLoading ? "Submit" : "loading..."}
                 </button>
               </div>
               <div
@@ -276,6 +401,7 @@ const AccountFighter = () => {
       <SurpRiseGiftPop
         showsurpriseModal={showsurpriseModal}
         setshowsurpriseModal={setshowsurpriseModal}
+        register={register}
       />
 
       {/* account delte modal */}
@@ -288,6 +414,12 @@ const AccountFighter = () => {
         showTwiterModaldModal={showTwiterModaldModal}
         setshowTwiterModaldModal={setshowTwiterModaldModal}
       />
+
+      {globalLoading && (
+        <div className="fighter-home-spinner">
+          <Spinner animation="border" variant="danger" />
+        </div>
+      )}
     </main>
   );
 };

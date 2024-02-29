@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import "../CustomSlect.css"; // Create a CSS file and import it here
 
-const CustomSelect = ({ options }) => {
-  const [selectedOption, setSelectedOption] = useState(options[0]);
+const CustomSelect = ({ options, setValue, errors, clearErrors }) => {
+  const [selectedOption, setSelectedOption] = useState({
+    categoryName: "Category",
+  });
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef(null);
 
@@ -26,6 +28,8 @@ const CustomSelect = ({ options }) => {
 
   const handleOptionClick = (option) => {
     setSelectedOption(option);
+    clearErrors("goalCategory");
+    setValue("goalCategory", option?.categoryName || "Other");
     closeAllSelect();
   };
 
@@ -38,22 +42,31 @@ const CustomSelect = ({ options }) => {
       className={`custom-select ${isOpen ? "select-arrow-active" : ""}`}
       ref={selectRef}
     >
-      <div className="select-selected" onClick={handleSelectClick}>
-        {selectedOption.label}
+      <div
+        className={`select-selected ${
+          errors?.goalCategory ? "error-border-profile" : ""
+        }`}
+        onClick={handleSelectClick}
+      >
+        {selectedOption?.categoryName}
       </div>
+
       <div className={`select-items ${isOpen ? "" : "select-hide"}`}>
         {options.map((option) => (
           <div
-            key={option.value}
+            key={option._id}
             className={`select-item ${
-              selectedOption.value === option.value ? "same-as-selected" : ""
+              selectedOption?.categoryName === option?.categoryName
+                ? "same-as-selected"
+                : ""
             }`}
             onClick={() => handleOptionClick(option)}
           >
-            {option.label}
+            {option?.categoryName}
           </div>
         ))}
       </div>
+      <p className="profile-error-message">{errors?.goalCategory?.message}</p>
     </div>
   );
 };

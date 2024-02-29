@@ -8,7 +8,7 @@ async function errorMiddleware(error, req, res, next) {
   // console.error("error in errorMiddleWare status", statusCode);
   // console.error("error in errorMiddleWare error message", message);
   // console.error("error in errorMiddleWare error data", data);
- return res.status(statusCode).json({ status, message, data });
+  return res.status(statusCode).json({ status, message, data });
 }
 
 module.exports = errorMiddleware;

@@ -1,7 +1,5 @@
 import { Navigate } from "react-router-dom";
 const FighterGaurd = ({ role, components }) => {
-  console.log("role in fighter gaurd", role);
-
   if (role === "fighter") {
     return components;
   } else {

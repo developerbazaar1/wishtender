@@ -33,7 +33,7 @@ const SignIn = () => {
     try {
       const res = await AuthApi.signin(formData);
       let { status, data } = res;
-      console.log(data);
+      // console.log(data);
       // console.log("response", data.user);
       if (status === 200) {
         toast.success(data.message);

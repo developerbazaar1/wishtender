@@ -4,12 +4,20 @@ const { body } = require("express-validator");
 const User = require("../models/user");
 const userController = require("../controllers/user");
 const isAuth = require("../middleware/is-auth");
-
+const upload = require("../middleware/handleFileUpload");
 const router = express.Router();
 
 router.get("/", isAuth, userController.getUser);
 
-router.patch("/update", isAuth, userController.updateUser);
+router.patch(
+  "/update",
+  upload.fields([
+    { name: "profileImage", maxCount: 1 },
+    { name: "bannerImage", maxCount: 1 },
+  ]),
+  isAuth,
+  userController.updateUser
+);
 
 router.patch(
   "/change-password",
@@ -26,18 +34,16 @@ router.patch(
 );
 
 // Add this line to your existing routes setup
-router.put('/social-links', isAuth, userController.updateUserSocialLinks);
-
+router.put("/social-links", isAuth, userController.updateUserSocialLinks);
 
 router.get("/fighters", isAuth, userController.getFighters);
 
 // Follow or unfollow a fighter
-router.post('/:fighterId/:action', isAuth, userController.manageFollow);
-
+router.post("/:fighterId/:action", isAuth, userController.manageFollow);
 
 // Add the new endpoint to get followed fighters
-router.get('/followed-fighters', isAuth, userController.getFollowedFighters);
+router.get("/followed-fighters", isAuth, userController.getFollowedFighters);
 
-router.get("/fighter/:fighterId", isAuth, userController.getFighter);
+router.get("/fighter/:userName", isAuth, userController.getFighter);
 
 module.exports = router;

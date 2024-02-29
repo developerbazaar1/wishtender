@@ -39,7 +39,10 @@ const FighterSignup = () => {
         console.log(res);
       })
       .catch((e) => {
-        console.log(e.response?.data);
+        console.log(e);
+        if (e?.code) {
+          toast.error(e?.message);
+        }
         if (e?.response?.status === 422) {
           const validationErrors = e.response?.data?.data || [];
 

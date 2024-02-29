@@ -1,18 +1,15 @@
 import React, { useState } from "react";
 
-const GoalType = () => {
-  const [selectedGoal, setSelectedGoal] = useState("");
+const GoalType = ({ register, watch, errors }) => {
   const [goalTypeClicked, setGoalTypeClicked] = useState(false);
 
-  const handleGoalChange = (goalType) => {
-    setSelectedGoal(goalType);
-    setGoalTypeClicked(true);
-  };
-
+  const selectedGoalType = watch("goalType");
   return (
     <div className="form-group text-left mb-2">
       <label
-        className="form-head mb-2 goaldropdownBtn"
+        className={`form-head mb-2 goaldropdownBtn form-control ${
+          errors?.goalType ? "error-border-profile" : ""
+        }`}
         type="button"
         onClick={() => setGoalTypeClicked(!goalTypeClicked)}
       >
@@ -26,15 +23,28 @@ const GoalType = () => {
             <div className="goal-select-grp">
               <input
                 type="radio"
-                name="Goal"
+                name="goalType"
                 id="singleGoal"
-                onChange={() => handleGoalChange("single")}
+                value="single"
+                {...register("goalType", {
+                  required: {
+                    value: true,
+                    message: "Please select a goal type",
+                  },
+                })}
               />
-              <label htmlFor="singleGoal goal-price-typo">Single Goal</label>
+              <label htmlFor="singleGoal" className="goal-price-typo">
+                Single Goal
+              </label>
             </div>
-            {selectedGoal === "single" && (
+            {selectedGoalType === "single" && (
               <div className="single-goal-content">
-                <input type="checkbox" id="repeatPurchase" />
+                <input
+                  type="checkbox"
+                  id="repeatPurchase"
+                  value="multiple"
+                  {...register("goalPurchaseType", { defaultValue: "single" })}
+                />
                 <label htmlFor="repeatPurchase">
                   <span className="typo-grey-14">Allow Repeat Purchases</span>
                   <span className="typo-grey-12">
@@ -51,43 +61,77 @@ const GoalType = () => {
             <div className="goal-select-grp">
               <input
                 type="radio"
-                name="Goal"
+                name="goalType"
                 id="subscriptionGoal"
-                onChange={() => handleGoalChange("subscription")}
+                value="subscription"
+                {...register("goalType", {
+                  required: {
+                    value: true,
+                    message: "Please select a goal type",
+                  },
+                })}
               />
-              <label htmlFor="subscriptionGoal goal-price-typo">
-                Subscription
-              </label>
+              <label htmlFor="subscriptionGoal">Subscription</label>
             </div>
-            {selectedGoal === "subscription" && (
+            {selectedGoalType === "subscription" && (
               <div className="sub-goal-content row">
                 <div className="sub-left col-5">
-                  <input type="radio" name="sub" id="oneTime" />
+                  <input
+                    type="checkbox"
+                    name="goalPurchaseType"
+                    id="oneTime"
+                    value="multiple"
+                    {...register("goalPurchaseType")}
+                  />
                   <label htmlFor="oneTime" className="typo-grey-14">
                     Allow One time Purchase
                   </label>
                 </div>
                 <div className="sub-right col-6">
                   <div className="sub-right-inputpgrp">
-                    <input type="radio" name="sub" id="Daily" />
+                    <input
+                      type="radio"
+                      name="subscriptionType"
+                      value="Daily"
+                      id="Daily"
+                      {...register("subscriptionType")}
+                    />
                     <label htmlFor="Daily" className="typo-grey-14">
                       Daily
                     </label>
                   </div>
                   <div className="sub-right-inputpgrp">
-                    <input type="radio" name="sub" id="Weekly" />
+                    <input
+                      type="radio"
+                      name="subscriptionType"
+                      value="Weekly"
+                      id="Weekly"
+                      {...register("subscriptionType")}
+                    />
                     <label htmlFor="Weekly" className="typo-grey-14">
                       Weekly
                     </label>
                   </div>
                   <div className="sub-right-inputpgrp">
-                    <input type="radio" name="sub" id="BiWeekly" />
+                    <input
+                      type="radio"
+                      name="subscriptionType"
+                      value="Bi Weekly"
+                      id="BiWeekly"
+                      {...register("subscriptionType")}
+                    />
                     <label htmlFor="BiWeekly" className="typo-grey-14">
                       Bi-Weekly
                     </label>
                   </div>
                   <div className="sub-right-inputpgrp">
-                    <input type="radio" name="sub" id="Monthly" />
+                    <input
+                      type="radio"
+                      name="subscriptionType"
+                      value="Monthly"
+                      id="Monthly"
+                      {...register("subscriptionType")}
+                    />
                     <label htmlFor="Monthly" className="typo-grey-14">
                       Monthly
                     </label>
@@ -102,13 +146,19 @@ const GoalType = () => {
             <div className="goal-select-grp">
               <input
                 type="radio"
-                name="Goal"
+                name="goalType"
                 id="crowdFundGoal"
-                onChange={() => handleGoalChange("crowdFund")}
+                value="crowd"
+                {...register("goalType", {
+                  required: {
+                    value: true,
+                    message: "Please select a goal type",
+                  },
+                })}
               />
-              <label htmlFor="crowdFundGoal goal-price-typo">Crowd Fund</label>
+              <label htmlFor="crowdFundGoal">Crowd Fund</label>
             </div>
-            {selectedGoal === "crowdFund" && (
+            {selectedGoalType === "crowd" && (
               <label htmlFor="crowdFundGoal" className="typo-grey-14">
                 Allows multiple fans to contribute to your goal.
               </label>
@@ -116,6 +166,8 @@ const GoalType = () => {
           </div>
         </div>
       )}
+
+      <p className="profile-error-message">{errors?.goalType?.message}</p>
     </div>
   );
 };
