@@ -4059,10 +4059,10 @@ img.number-icon {
   border-color: inherit;
   border-radius: inherit;
 }
+
 .favorite-fighters-container {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-around;
 }
 
 .favorite-fighter {

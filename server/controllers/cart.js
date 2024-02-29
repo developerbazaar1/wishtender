@@ -22,6 +22,13 @@ exports.addToCart = async (req, res, next) => {
       return res.status(404).json({ error: "User not found" });
     }
     if (shopType && shopType === "surprise") {
+      //Prevent user from sending surprise to himself
+      if (fighterId.toString() === user._id.toString()) {
+        return res
+          .status(403)
+          .json({ error: "You cannot send Surprise to you self" });
+      }
+
       // Check if the goal exists and is active
       const fighter = await User.findOne({
         _id: fighterId,

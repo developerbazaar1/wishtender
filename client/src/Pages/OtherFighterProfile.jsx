@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { IoCopyOutline } from "react-icons/io5";
 import { FaRegCalendarAlt } from "react-icons/fa";
-import { FaFacebookF } from "react-icons/fa";
-import { FaInstagram, FaXTwitter } from "react-icons/fa6";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import Goals from "../components/Goals";
 import { DragDropContext } from "react-beautiful-dnd";
@@ -18,7 +16,12 @@ import castDate, { getSocialIcon, imgBasePath } from "../utils/Helper";
 import { filterIcon } from "../elements/SvgElements";
 import { useCategory } from "../features/categoryHooks";
 import { Spinner } from "react-bootstrap";
+import useFollowed from "../services/useFollowed";
+import { setFollowed } from "../features/fetchFollowedSlice";
+import { useDispatch } from "react-redux";
 const OtherFighterProfile = () => {
+  const following = useFollowed()?.followed;
+  const dispatch = useDispatch();
   const [sendShowSurpriseModal, setSendShowSurpriseModal] = useState(false);
   const categories = useCategory();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -128,6 +131,36 @@ const OtherFighterProfile = () => {
     });
   }
 
+  //function to follow and unfollow fighter
+  const followUnfollow = async (fighterId, action) => {
+    startGloablLoading();
+    try {
+      const res = await userApi.followUnfollow(token, fighterId, action);
+      console.log(res);
+      if (res?.status === 200) {
+        dispatch(
+          setFollowed({
+            followed: res?.data?.updatedFollower,
+          })
+        );
+        return toast.success(res?.data?.message);
+      }
+    } catch (e) {
+      console.log(e);
+      if (e?.response?.status === 401) {
+        toast.error("Something went wrong try later");
+      }
+      if (e?.response?.status === 500) {
+        toast.error(e?.response?.data?.message);
+      }
+      if (e?.response?.status === 400) {
+        toast.error(e?.response?.data?.message);
+      }
+    } finally {
+      stopGlobalLoading();
+    }
+  };
+
   useEffect(() => {
     loadFighterData();
   }, [userName, searchParams.get("sort"), searchParams.get("category")]);
@@ -187,15 +220,37 @@ const OtherFighterProfile = () => {
                           navigator.clipboard.writeText(
                             "https://www.fightcompanion.io/aainsley"
                           );
+                          toast.info("Copied to clipboard");
                         }}
                       />
                     </div>
                   </div>
                   <div className="log-user-info-right">
                     <div className="fighter-top text-end">
-                      <button className="follow-button fav-btn">
-                        Following
-                      </button>
+                      {following?.some(
+                        (localElement) =>
+                          localElement?._id === fighterData?.data?._id
+                      ) ? (
+                        <button
+                          className="follow-button fav-btn"
+                          disabled={globalLoading}
+                          onClick={() =>
+                            followUnfollow(fighterData?.data?._id, "unfollow")
+                          }
+                        >
+                          Following
+                        </button>
+                      ) : (
+                        <button
+                          className="follow-button fav-btn"
+                          disabled={globalLoading}
+                          onClick={() =>
+                            followUnfollow(fighterData?.data?._id, "follow")
+                          }
+                        >
+                          Follow
+                        </button>
+                      )}
                     </div>
                     <div className="fighter-bottom d-flex gap-2 flex-column">
                       <div className="d-flex align-items-center gap-1">
@@ -208,21 +263,6 @@ const OtherFighterProfile = () => {
                             {getSocialIcon(link?.platform)}
                           </Link>
                         ))}
-                        <Link>
-                          <FaXTwitter className="social-icon-style" size={20} />
-                        </Link>
-                        <Link>
-                          <FaInstagram
-                            className="social-icon-style"
-                            size={20}
-                          />
-                        </Link>
-                        <Link>
-                          <FaFacebookF
-                            className="social-icon-style"
-                            size={20}
-                          />
-                        </Link>
                       </div>
                     </div>
                   </div>

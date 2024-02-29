@@ -285,6 +285,7 @@ const MainContent = () => {
                           navigator.clipboard.writeText(
                             "https://www.fightcompanion.io/aainsley"
                           );
+                          toast.info("Copied to clipboard");
                         }}
                       />
                     </div>

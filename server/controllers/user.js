@@ -2,6 +2,7 @@ const { validationResult } = require("express-validator");
 const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const DeleteAccount = require("../models/deleteAccount");
+const mongoose = require("mongoose");
 
 exports.getUser = (req, res, next) => {
   User.findById(req.userId)
@@ -261,7 +262,14 @@ exports.getFighters = async (req, res, next) => {
     if (req.query.random) {
       // If a random key is provided, fetch data in random order
       const fighters = await User.aggregate([
-        { $match: { ...query, ...getSearchQuery(req.query.search) } },
+        {
+          $match: {
+            ...query,
+            ...getSearchQuery(req.query.search),
+            _id: { $ne: mongoose.Types.ObjectId(req.userId) },
+          },
+        }, // Exclude req.userId
+        { $sample: { size: 10 } }, // Adjust the sample size as needed
         {
           $project: {
             password: 0,
@@ -269,7 +277,6 @@ exports.getFighters = async (req, res, next) => {
             agreeTermConditions: 0,
           },
         },
-        // Adjust the sample size as needed
       ]);
       res.status(200).json({
         status: "success",
@@ -281,7 +288,10 @@ exports.getFighters = async (req, res, next) => {
       const fighters = await User.find({
         ...query,
         ...getSearchQuery(req.query.search),
-      }).select("-password -followers -cart -agreeTermConditions");
+        _id: { $ne: mongoose.Types.ObjectId(req.userId) }, // Exclude req.userId
+      })
+        .select("-password -followers -cart -agreeTermConditions")
+        .limit(10); // Limit the result size as needed
       res.status(200).json({
         status: "success",
         message: "Get fighters data successfully",
@@ -508,7 +518,7 @@ exports.updateUserSocialLinks = async (req, res, next) => {
   try {
     const userId = req.userId;
     const { socialLinks } = req.body;
-    console.log(socialLinks);
+
     // Check if the user exists
     const user = await User.findById(userId).select(
       "-password -followers -cart -agreeTermConditions"

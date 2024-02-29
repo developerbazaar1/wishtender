@@ -128,7 +128,7 @@ const AccountFighter = () => {
                         ? selectedImage
                         : `${imgBasePath}/${user?.profileImage}`
                     }
-                    alt="profile-pic"
+                    alt=""
                     className="profile-image"
                   />
                   {imageIcon}
