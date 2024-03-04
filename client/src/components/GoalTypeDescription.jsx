@@ -1,3 +1,4 @@
+import { FundedPercentage } from "../utils/Helper";
 import LocaProgressBar from "./ProgressBar";
 
 export const GoalCrowdDescription = ({
@@ -6,14 +7,18 @@ export const GoalCrowdDescription = ({
   clearError,
   errors,
 }) => {
+  const totalPercentage = FundedPercentage(
+    goals.TotalCrowdFunded,
+    goals?.goalPrice
+  );
   return (
     <div className="subscription-details mt-4">
       <div className="goal-progressbar">
-        <LocaProgressBar />
+        <LocaProgressBar totalPercent={totalPercentage} />
       </div>
       <div className="divii-5">
         <div className="divii-6">
-          <div className="divii-7">25%</div>
+          <div className="divii-7">{totalPercentage || 20}%</div>
           <div className="divii-8">Granted</div>
         </div>
 

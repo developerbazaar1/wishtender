@@ -224,3 +224,15 @@ export const RankingIterval = (pathname) => {
     return "Yearly";
   }
 };
+
+//give total funded %
+export const FundedPercentage = (creditedAmount, targetAmount) => {
+  if (targetAmount <= 0) {
+    return 0; // Prevent division by zero
+  }
+  let totalPercent = (100 * creditedAmount) / targetAmount;
+  // Ensure percentage is within the range of 0 to 100
+  totalPercent = Math.max(0, Math.min(totalPercent, 100));
+
+  return totalPercent;
+};

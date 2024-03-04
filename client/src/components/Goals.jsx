@@ -6,7 +6,7 @@ import { FaXTwitter } from "react-icons/fa6";
 import { DragButton } from "../elements/dragButton";
 
 import { Draggable, Droppable } from "react-beautiful-dnd";
-import { imgBasePath } from "../utils/Helper";
+import { FundedPercentage, imgBasePath } from "../utils/Helper";
 
 const Goals = ({ goals, currency }) => {
   return (
@@ -73,7 +73,12 @@ const Goals = ({ goals, currency }) => {
                       <div>
                         {goal?.goalType === "crowd" && (
                           <div className="goal-progressbar">
-                            <LocaProgressBar />
+                            <LocaProgressBar
+                              totalPercent={FundedPercentage(
+                                goal.TotalCrowdFunded,
+                                goal.goalPrice
+                              )}
+                            />
                           </div>
                         )}
 
