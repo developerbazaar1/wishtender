@@ -91,6 +91,9 @@ const OtherFighterProfile = () => {
         searchParams.get("sort") || "",
         searchParams.get("category") || ""
       );
+
+      // console.log(res);
+
       if (res?.status === 200) {
         setFighterData({
           data: res?.data?.data[0],

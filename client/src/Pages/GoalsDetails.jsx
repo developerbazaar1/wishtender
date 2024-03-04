@@ -125,7 +125,7 @@ const GoalsDetails = ({ token }) => {
   }, [goalId]);
 
   // console.log(data?.goals);
-  console.log("This is Error", errors);
+  // console.log("This is Error", errors);
 
   return (
     <div className="main-content">

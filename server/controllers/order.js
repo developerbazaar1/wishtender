@@ -5,6 +5,7 @@ const Order = require("../models/order");
 const Transaction = require("../models/transaction");
 const mongoose = require("mongoose");
 const transaction = require("../models/transaction");
+const goal = require("../models/goal");
 
 exports.checkout = async (req, res, next) => {
   try {
@@ -96,6 +97,10 @@ exports.updateOrder = async (req, res, next) => {
     if (!order) {
       return res.status(404).json({ error: "Order not found" });
     }
+
+    // console.log(order);
+    // const updatedTotalFunded = await updateTotalCrowdFundedAmount(order.items);
+
     // Update the order status
     order.status = status;
     order.paymentMethod = paymentMethod;
@@ -105,6 +110,8 @@ exports.updateOrder = async (req, res, next) => {
     await order.save();
     // If the order status is 'paid', create a new transaction for each item
     if (status === "paid") {
+      await updateTotalCrowdFundedAmount(order.items);
+
       const itemTransactions = [];
       for (const item of order.items) {
         const itemTransaction = new Transaction({
@@ -346,87 +353,22 @@ async function fetchCreatorDetaisl(creatorId) {
   }
 }
 
-// async function fetchedTransactionTable(time) {
-//   try {
-//     let fromDate, toDate;
+//helper function to find and update crowd funded totalFundedAmount
 
-//     // Calculate date range based on time parameter
-//     const currentDate = new Date();
-//     switch (time) {
-//       case "Monthly":
-//         fromDate = new Date(
-//           currentDate.getFullYear(),
-//           currentDate.getMonth(),
-//           1
-//         ); // Start of current month
-//         toDate = new Date(
-//           currentDate.getFullYear(),
-//           currentDate.getMonth() + 1,
-//           0
-//         ); // End of current month
-//         break;
-//       case "Quarterly":
-//         fromDate = new Date(
-//           currentDate.getFullYear(),
-//           currentDate.getMonth() - 3,
-//           1
-//         ); // Start of three months ago
-//         toDate = currentDate; // Current date
-//         break;
-//       case "Yearly":
-//         fromDate = new Date(
-//           currentDate.getFullYear() - 1,
-//           currentDate.getMonth(),
-//           currentDate.getDate()
-//         ); // One year ago from today
-//         toDate = currentDate; // Current date
-//         break;
-//       default:
-//         throw new Error("Invalid time parameter");
-//     }
-
-//     // Fetch transactions based on date range
-//     const data = await transaction.find({
-//       createdAt: {
-//         $gte: fromDate,
-//         $lte: toDate,
-//       },
-//     });
-
-//     // console.log(data);
-
-//     const creatorIdTotals = {};
-
-//     data.forEach((item) => {
-//       const { creatorId, TotalAmount, fighterId } = item;
-//       if (creatorId) {
-//         if (!creatorIdTotals[creatorId]) {
-//           creatorIdTotals[creatorId] = 0;
-//         }
-//         creatorIdTotals[creatorId] += parseInt(TotalAmount);
-//       } else {
-//         if (!creatorIdTotals[fighterId]) {
-//           creatorIdTotals[fighterId] = 0;
-//         }
-//         creatorIdTotals[fighterId] += parseInt(TotalAmount);
-//       }
-//     });
-
-//     // Sort creatorIds by total amount in descending order
-//     const sortedCreatorIds = Object.entries(creatorIdTotals).sort(
-//       (a, b) => b[1] - a[1]
-//     );
-
-//     // for (const key in sortedCreatorIds) {
-//     //   console.log(sortedCreatorIds[key][0]);
-//     // }
-
-//     sortedCreatorIds.forEach((item) => {
-//       console.log(item[0]);
-//     });
-//   } catch (e) {
-//     console.log(e);
-//   }
-// }
-
-// fetchedTransactionTable("Yearly");
+async function updateTotalCrowdFundedAmount(items) {
+  try {
+    for (const item of items) {
+      await Goal.findOneAndUpdate(
+        {
+          _id: mongoose.Types.ObjectId(item.goalId),
+          goalType: "crowd",
+        },
+        {
+          $inc: { TotalCrowdFunded: +item.amount },
+        }
+      );
+    }
+  } catch (error) {
+    throw error;
+  }
+}

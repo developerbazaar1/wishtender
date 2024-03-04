@@ -16,6 +16,10 @@ const goalSchema = new Schema(
       enum: ["single", "subscription", "crowd"],
       default: "single",
     },
+    TotalCrowdFunded: {
+      type: Number,
+      default: 0,
+    },
     subscriptionType: {
       type: String,
       enum: ["Daily", "Weekly", "Bi Weekly", "Monthly"],

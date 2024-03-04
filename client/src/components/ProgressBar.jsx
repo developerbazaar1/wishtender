@@ -1,9 +1,14 @@
 import ProgressBar from "react-bootstrap/ProgressBar";
 
-function LocaProgressBar() {
-  const now = 60;
+function LocaProgressBar({ totalPercent = 60 }) {
+  // const now = 60;
   return (
-    <ProgressBar variant="black" now={now} label={`${now}%`} visuallyHidden />
+    <ProgressBar
+      variant="black"
+      now={totalPercent}
+      label={`${totalPercent}%`}
+      visuallyHidden
+    />
   );
 }
 
