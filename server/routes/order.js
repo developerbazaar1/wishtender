@@ -8,11 +8,12 @@ const isAuth = require("../middleware/is-auth");
 const router = express.Router();
 
 // Add a route for checkout
-router.post('/create', isAuth, orderController.checkout);
+router.post("/create", isAuth, orderController.checkout);
 
-router.put('/update/:orderId', isAuth, orderController.updateOrder);
+router.put("/update/:orderId", isAuth, orderController.updateOrder);
 
-router.get('/getActivityGoals', isAuth, orderController.getActivityGoals);
+router.get("/getActivityGoals", isAuth, orderController.getActivityGoals);
 
+router.get("/get-ranking", isAuth, orderController.getTopRankings);
 
 module.exports = router;

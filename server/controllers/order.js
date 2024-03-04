@@ -4,6 +4,7 @@ const Goal = require("../models/goal");
 const Order = require("../models/order");
 const Transaction = require("../models/transaction");
 const mongoose = require("mongoose");
+const transaction = require("../models/transaction");
 
 exports.checkout = async (req, res, next) => {
   try {
@@ -167,41 +168,55 @@ exports.getActivityGoals = async (req, res, next) => {
     const query = {
       shopType: shopType,
     };
-    // Add userId condition based on fetchByCreatorId and fetchBySender
-    if (!req.query.receiving && !req.query.sending) {
-      query["$or"] = [{ userId }, { creatorId: userId }];
-    }
-    if (req.query.receiving) {
-      query["creatorId"] = req.query.receiving;
-    }
-    if (req.query.sending) {
-      query["userId"] = req.query.sending;
-    }
-    // Sort options
-    const sortOption = { createdAt: -1 }; // Sort by most recent
-    // Fetch goals with optional filters and sorting
-    const goals = await Transaction.find(query)
-      .sort(sortOption)
-      .populate({
-        path: "creatorId", // populate creatorId field from User collection
+
+    let goals; // Declare goals variable outside of the conditional blocks
+    if (shopType === "goal") {
+      // Add userId condition based on fetchByCreatorId and fetchBySender
+      if (!req.query.receiving && !req.query.sending) {
+        query["$or"] = [{ userId }, { creatorId: userId }];
+      }
+      if (req.query.receiving) {
+        query["creatorId"] = req.query.receiving;
+      }
+      if (req.query.sending) {
+        query["userId"] = req.query.sending;
+      }
+      // Sort options
+      const sortOption = { createdAt: -1 }; // Sort by most recent
+      // Fetch goals with optional filters and sorting
+      goals = await Transaction.find(query)
+        .sort(sortOption)
+        .populate({
+          path: "creatorId", // populate creatorId field from User collection
+          model: "User", // User model
+          select: "userName profileImage firstName lastName promotionCompany", // fields to select from User
+        })
+        .populate({
+          path: "goalId", // populate goalId field from Goal collection
+          model: "Goal", // Goal model
+          select: "goalName goalType goalImage subscriptionType", // fields to select from Goal
+        });
+    } else {
+      // Add userId condition based on fetchByCreatorId and fetchBySender
+      if (!req.query.receiving && !req.query.sending) {
+        query["$or"] = [{ userId }, { fighterId: userId }];
+      }
+      if (req.query.receiving) {
+        query["fighterId"] = req.query.receiving;
+      }
+      if (req.query.sending) {
+        query["userId"] = req.query.sending;
+      }
+      // Sort options
+      const sortOption = { createdAt: -1 }; // Sort by most recent
+      // Fetch goals with optional filters and sorting
+      goals = await Transaction.find(query).sort(sortOption).populate({
+        path: "fighterId", // populate creatorId field from User collection
         model: "User", // User model
         select: "userName profileImage firstName lastName promotionCompany", // fields to select from User
-      })
-      .populate({
-        path: "goalId", // populate goalId field from Goal collection
-        model: "Goal", // Goal model
-        select: "goalName goalType goalImage subscriptionType", // fields to select from Goal
       });
-    // .populate({
-    //     path: "orderId",
-    //     model: "Order",
-    //     select: "_id Totalamount currency paymentMethod status items",
-    //     populate: {
-    //         path: "items",
-    //         model: "Order",
-    //         select: "shopType fighterId goalId goalName goalType goalImage creatorId creatorName quantity amount senderMessage",
-    //     },
-    // });
+    }
+
     res.status(200).json({
       status: "success",
       message: "Get goals data successfully",
@@ -214,3 +229,204 @@ exports.getActivityGoals = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.getTopRankings = async (req, res, next) => {
+  try {
+    const time = req.query.time;
+    let fromDate, toDate;
+
+    if (!time) {
+      const err = new Error("Please Provide The time");
+      err.statusCode = 400;
+      throw err;
+    }
+
+    // Calculate date range based on time parameter
+    const currentDate = new Date();
+    switch (time) {
+      case "Monthly":
+        fromDate = new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth(),
+          1
+        ); // Start of current month
+        toDate = new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth() + 1,
+          0
+        ); // End of current month
+        break;
+      case "Quarterly":
+        fromDate = new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth() - 3,
+          1
+        ); // Start of three months ago
+        toDate = currentDate; // Current date
+        break;
+      case "Yearly":
+        fromDate = new Date(
+          currentDate.getFullYear() - 1,
+          currentDate.getMonth(),
+          currentDate.getDate()
+        ); // One year ago from today
+        toDate = currentDate; // Current date
+        break;
+      default:
+        const err = new Error("Invalid time parameter");
+        err.statusCode = 400; // Bad Request
+        throw err;
+    }
+
+    const data = await transaction.find({
+      createdAt: {
+        $gte: fromDate,
+        $lte: toDate,
+      },
+    });
+
+    const creatorIdTotals = {};
+
+    data.forEach((item) => {
+      const { creatorId, TotalAmount, fighterId } = item;
+      if (creatorId) {
+        if (!creatorIdTotals[creatorId]) {
+          creatorIdTotals[creatorId] = 0;
+        }
+        creatorIdTotals[creatorId] += parseInt(TotalAmount);
+      } else {
+        if (!creatorIdTotals[fighterId]) {
+          creatorIdTotals[fighterId] = 0;
+        }
+        creatorIdTotals[fighterId] += parseInt(TotalAmount);
+      }
+    });
+
+    const sortedCreatorIds = Object.entries(creatorIdTotals).sort(
+      (a, b) => b[1] - a[1]
+    );
+
+    const detailedCreatorData = [];
+    for (const key in sortedCreatorIds) {
+      // console.log("this is key", sortedCreatorIds[key][0]);
+      const creatorDetails = await fetchCreatorDetaisl(
+        mongoose.Types.ObjectId(sortedCreatorIds[key][0])
+      );
+      detailedCreatorData.push(creatorDetails);
+    }
+    // console.log(detailedCreatorData);
+
+    res.status(200).json({
+      status: "scuccess",
+      data: detailedCreatorData,
+    });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
+async function fetchCreatorDetaisl(creatorId) {
+  try {
+    const creator = await User.findById(creatorId).select({
+      userName: 1,
+      firstName: 1,
+      lastName: 1,
+      promotionCompany: 1,
+      profileImage: 1,
+    });
+    return creator;
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+    }
+    throw error;
+  }
+}
+
+// async function fetchedTransactionTable(time) {
+//   try {
+//     let fromDate, toDate;
+
+//     // Calculate date range based on time parameter
+//     const currentDate = new Date();
+//     switch (time) {
+//       case "Monthly":
+//         fromDate = new Date(
+//           currentDate.getFullYear(),
+//           currentDate.getMonth(),
+//           1
+//         ); // Start of current month
+//         toDate = new Date(
+//           currentDate.getFullYear(),
+//           currentDate.getMonth() + 1,
+//           0
+//         ); // End of current month
+//         break;
+//       case "Quarterly":
+//         fromDate = new Date(
+//           currentDate.getFullYear(),
+//           currentDate.getMonth() - 3,
+//           1
+//         ); // Start of three months ago
+//         toDate = currentDate; // Current date
+//         break;
+//       case "Yearly":
+//         fromDate = new Date(
+//           currentDate.getFullYear() - 1,
+//           currentDate.getMonth(),
+//           currentDate.getDate()
+//         ); // One year ago from today
+//         toDate = currentDate; // Current date
+//         break;
+//       default:
+//         throw new Error("Invalid time parameter");
+//     }
+
+//     // Fetch transactions based on date range
+//     const data = await transaction.find({
+//       createdAt: {
+//         $gte: fromDate,
+//         $lte: toDate,
+//       },
+//     });
+
+//     // console.log(data);
+
+//     const creatorIdTotals = {};
+
+//     data.forEach((item) => {
+//       const { creatorId, TotalAmount, fighterId } = item;
+//       if (creatorId) {
+//         if (!creatorIdTotals[creatorId]) {
+//           creatorIdTotals[creatorId] = 0;
+//         }
+//         creatorIdTotals[creatorId] += parseInt(TotalAmount);
+//       } else {
+//         if (!creatorIdTotals[fighterId]) {
+//           creatorIdTotals[fighterId] = 0;
+//         }
+//         creatorIdTotals[fighterId] += parseInt(TotalAmount);
+//       }
+//     });
+
+//     // Sort creatorIds by total amount in descending order
+//     const sortedCreatorIds = Object.entries(creatorIdTotals).sort(
+//       (a, b) => b[1] - a[1]
+//     );
+
+//     // for (const key in sortedCreatorIds) {
+//     //   console.log(sortedCreatorIds[key][0]);
+//     // }
+
+//     sortedCreatorIds.forEach((item) => {
+//       console.log(item[0]);
+//     });
+//   } catch (e) {
+//     console.log(e);
+//   }
+// }
+
+// fetchedTransactionTable("Yearly");

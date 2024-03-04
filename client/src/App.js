@@ -50,6 +50,8 @@ import { useDispatch } from "react-redux";
 import GoalActivity from "./components/GoalActivity";
 import SubscriptionActivity from "./components/SubscriptionActivity";
 import SurpriseActivity from "./components/SurpriseActivity";
+import RankingLyout from "./Pages/RankingLyout";
+import RankingPage from "./Pages/Ranking/RankingPage";
 function App() {
   const dispatch = useDispatch();
   const [categories, setCategories] = useState([]);
@@ -183,8 +185,14 @@ function App() {
               ],
             },
             {
+              //route for ranking
               path: "ranking",
-              element: <RankingFighter />,
+              element: <RankingLyout />,
+              children: [
+                { path: "", element: <RankingPage /> },
+                { path: "quartely", element: <RankingPage /> },
+                { path: "yearly", element: <RankingPage /> },
+              ],
             },
           ],
         },
