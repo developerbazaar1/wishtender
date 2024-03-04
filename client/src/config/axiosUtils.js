@@ -241,4 +241,13 @@ export const orderApi = {
       },
     });
   },
+  fetchRanking: async (token, time) => {
+    return await api.request({
+      url: `/order/get-ranking?time=${time}`,
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  },
 };

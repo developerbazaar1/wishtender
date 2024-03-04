@@ -144,14 +144,6 @@ export const TimeAndDate = (dateTimeString, type) => {
     const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
     return `${formattedHours}:${formattedMinutes} ${period}`;
   } else if (type === "date") {
-    console.log("current date", currentDate.getDate());
-    console.log("current month", currentDate.getMonth());
-    console.log("current year", currentDate.getFullYear());
-    console.log("target date", targetDate.getDate());
-    console.log("target month", targetDate.getMonth());
-    console.log("target year", targetDate.getFullYear());
-    const diffTime = Math.abs(currentDate.getTime() - targetDate.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     if (
       currentDate.getDate() === targetDate.getDate() &&
       currentDate.getMonth() === targetDate.getMonth() &&
@@ -175,4 +167,60 @@ export const TimeAndDate = (dateTimeString, type) => {
   }
 };
 
-// Example usage:
+//Function to return the next payment Date in formated order
+export const nextPaymentDate = (createdDate, interval) => {
+  const currentDate = new Date(createdDate);
+  let nextDate = new Date(currentDate);
+
+  switch (interval) {
+    case "Daily":
+      nextDate.setDate(nextDate.getDate() + 1);
+      break;
+    case "Weekly":
+      nextDate.setDate(nextDate.getDate() + 7);
+      break;
+    case "Bi Weekly":
+      nextDate.setDate(nextDate.getDate() + 14);
+      break;
+    case "Monthly":
+      nextDate.setMonth(nextDate.getMonth() + 1);
+      break;
+    default:
+      return "";
+  }
+
+  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+
+  const dayOfWeek = days[nextDate.getDay()];
+  const month = months[nextDate.getMonth()];
+  const day = nextDate.getDate();
+  const year = nextDate.getFullYear();
+
+  return `${dayOfWeek}: ${month} ${day} ${year}`;
+};
+
+// functin that help to decide ranking type   Monthly || Quartely || Yearly
+export const RankingIterval = (pathname) => {
+  const pathArray = pathname.split("/");
+  if (pathArray.length === 3) {
+    return "Monthly";
+  } else if (pathArray[3] === "quartely") {
+    return "Quarterly";
+  } else {
+    return "Yearly";
+  }
+};
