@@ -363,7 +363,10 @@ const AccountFighter = () => {
               <div className="act-btn mt-5">
                 {/* btn for payment */}
                 <div className="btn-payment mb-5">
-                  <Link to="/paymentinfo" className="btn-pay sub-bt link-text ">
+                  <Link
+                    to="/fighter/payment"
+                    className="btn-pay sub-bt link-text "
+                  >
                     Go to Payment Dashboard
                   </Link>
                 </div>

@@ -241,9 +241,9 @@ export const orderApi = {
       },
     });
   },
-  fetchRanking: async (token, time) => {
+  fetchRanking: async (token, time, limit) => {
     return await api.request({
-      url: `/order/get-ranking?time=${time}`,
+      url: `/order/get-ranking?time=${time}&limit=${limit}`,
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,

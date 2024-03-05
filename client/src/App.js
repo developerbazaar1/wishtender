@@ -194,6 +194,10 @@ function App() {
                 { path: "yearly", element: <RankingPage /> },
               ],
             },
+            {
+              path: "payment",
+              element: <PaymentInfo />,
+            },
           ],
         },
         {

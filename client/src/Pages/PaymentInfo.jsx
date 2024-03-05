@@ -39,27 +39,40 @@ const PaymentInfo = () => {
             <div className="p-desc">
               <ul className="payment-description-box">
                 <li className="pay-cnt-list">
-                  <p>You are proceeding to access a third-party website,
-                  Stripe.com, where you will be required to input your
-                  confidential payment details.</p>
+                  <p>
+                    You are proceeding to access a third-party website,
+                    Stripe.com, where you will be required to input your
+                    confidential payment details.
+                  </p>
                 </li>
                 <li className="pay-cnt-list">
-                  <p>Please refrain from incorporating any external business links
-                  within your Stripe account.</p>
+                  <p>
+                    Please refrain from incorporating any external business
+                    links within your Stripe account.
+                  </p>
                 </li>
                 <li className="pay-cnt-list">
-                  <p>We have already designated your business URL on Stripe as
-                  FightCompanion.io. Kindly refrain from altering this</p>
+                  <p>
+                    We have already designated your business URL on Stripe as
+                    FightCompanion.io. Kindly refrain from altering this
+                  </p>
                 </li>
                 <li className="pay-cnt-list">
-                 <p> Should Stripe endeavor to suspend your account at any
-                  juncture, please do not hesitate to contact us. We stand ready
-                  to assist you in preserving your account. Engaging with us in
-                  such instances will not only safeguard accounts for future
-                  users but also contribute to the enhancement of the Fight
-                  Companion platform for all users.</p>
+                  <p>
+                    {" "}
+                    Should Stripe endeavor to suspend your account at any
+                    juncture, please do not hesitate to contact us. We stand
+                    ready to assist you in preserving your account. Engaging
+                    with us in such instances will not only safeguard accounts
+                    for future users but also contribute to the enhancement of
+                    the Fight Companion platform for all users.
+                  </p>
                 </li>
               </ul>
+            </div>
+
+            <div className="delete-account mt-5 typo-grey-16-600 text-center">
+              <button className="proced-to-stripe">Proceed to Stripe</button>
             </div>
           </div>
         </div>
