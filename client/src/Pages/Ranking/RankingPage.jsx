@@ -52,7 +52,7 @@ export default function RankingPage() {
         {/* ranking card 01 */}
 
         {rankingData?.fighters?.map((fighter, index) => (
-          <div to="#" className="select-fighter" key={fighter._id}>
+          <div to="#" className="select-fighter" key={fighter?._id}>
             <div className="fighter-card mb-3">
               <Link to={`/fighter/${fighter?.userName}`}>
                 <img

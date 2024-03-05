@@ -4484,6 +4484,25 @@ span.cal-info {
   font-weight: 700;
 }
 
+.proced-to-stripe {
+  /* display: flex; */
+  width: 20.75rem;
+  height: 2.813rem;
+  padding: 10px 20px;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  gap: 10px;
+  border: #000;
+  background: var(--Surface-General-Black, #000);
+  border-radius: var(--Rectangle-Radius, 100px);
+}
+
+.proced-to-stripe:hover {
+  border: #141414;
+  background: var(--Surface-General-Black, #141414);
+}
+
 @keyframes colorSlide {
   0% {
     background-color: #152a68;

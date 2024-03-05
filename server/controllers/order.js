@@ -240,6 +240,8 @@ exports.getActivityGoals = async (req, res, next) => {
 exports.getTopRankings = async (req, res, next) => {
   try {
     const time = req.query.time;
+
+    const limit = req.query.limit;
     let fromDate, toDate;
 
     if (!time) {
@@ -319,6 +321,9 @@ exports.getTopRankings = async (req, res, next) => {
       const creatorDetails = await fetchCreatorDetaisl(
         mongoose.Types.ObjectId(sortedCreatorIds[key][0])
       );
+      if (creatorDetails === null) {
+        continue;
+      }
       detailedCreatorData.push(creatorDetails);
     }
     // console.log(detailedCreatorData);
@@ -337,13 +342,18 @@ exports.getTopRankings = async (req, res, next) => {
 
 async function fetchCreatorDetaisl(creatorId) {
   try {
-    const creator = await User.findById(creatorId).select({
+    // console.log(creatorId);
+    const creator = await User.findOne({
+      _id: creatorId,
+      displayNameInPublicRankingPage: true,
+    }).select({
       userName: 1,
       firstName: 1,
       lastName: 1,
       promotionCompany: 1,
       profileImage: 1,
     });
+    // console.log(creator);
     return creator;
   } catch (error) {
     if (!error.statusCode) {
@@ -355,9 +365,15 @@ async function fetchCreatorDetaisl(creatorId) {
 
 //helper function to find and update crowd funded totalFundedAmount
 
-async function updateTotalCrowdFundedAmount(items) {
+async function updateTotalCrowdFundedAmount(items, limit) {
   try {
+    let count = 0;
     for (const item of items) {
+      // Check if the limit has been reached
+      if (limit && count >= limit) {
+        break; // Exit the loop if the limit has been reached
+      }
+
       await Goal.findOneAndUpdate(
         {
           _id: mongoose.Types.ObjectId(item.goalId),
@@ -367,6 +383,8 @@ async function updateTotalCrowdFundedAmount(items) {
           $inc: { TotalCrowdFunded: +item.amount },
         }
       );
+
+      count++;
     }
   } catch (error) {
     throw error;
