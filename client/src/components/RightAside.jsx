@@ -71,7 +71,7 @@ const RightAside = () => {
       startGloablLoading();
 
       const res = await orderApi.fetchRanking(token, "Monthly", 4);
-      console.log(res);
+      // console.log(res);
       setRankingData({
         fighters: res?.data?.data,
         message: "data Fetched successfully",

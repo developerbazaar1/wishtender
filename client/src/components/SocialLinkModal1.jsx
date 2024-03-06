@@ -12,7 +12,7 @@ import { updateProfile } from "../features/authSlice";
 
 const SocialLinkModal1 = ({ showSocilMdl1, setShowSocilMdl1, socialLink }) => {
   const { globalLoading, startGloablLoading, stopGlobalLoading } = useLoading();
-  console.log(socialLink);
+  // console.log(socialLink);
   const dispatch = useDispatch();
   const auth = useAuth();
   // console.log("user social link item in modal updated props", socialLink);

@@ -43,6 +43,8 @@ const SignIn = () => {
             token: JSON.stringify(data.token),
           })
         );
+
+        localStorage.setItem("user-id", data.token);
         navigate(from, { replace: true });
       }
     } catch (e) {
