@@ -57,6 +57,35 @@ function App() {
   const [categories, setCategories] = useState([]);
   const auth = useAuth();
 
+  // Function to check if the token is expired
+  const isTokenExpired = (token) => {
+    if (!token) return true;
+    const decodedToken = JSON.parse(atob(token.split(".")[1]));
+    return Date.now() >= decodedToken.exp * 1000;
+  };
+
+  // Function to handle token expiration
+  const handleTokenExpiration = () => {
+    const token = localStorage.getItem("user-id");
+    if (isTokenExpired(token)) {
+      // Token expired, log out the user
+      localStorage.removeItem("user-id");
+      localStorage.removeItem("persist:wishtender");
+      window.location.reload(); // Refresh the page to trigger the sign-in flow
+    }
+  };
+
+  useEffect(() => {
+    // Check token expiration every minute
+    const interval = setInterval(() => {
+      handleTokenExpiration();
+    }, 60000);
+
+    // Clear the interval on component unmount
+    return () => clearInterval(interval);
+  }, []);
+
+  //routes
   const router = createBrowserRouter([
     {
       path: "/landing",
