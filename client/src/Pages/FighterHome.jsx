@@ -272,7 +272,7 @@ const MainContent = () => {
                       </div>
                       <div className="user-handle">{user?.userName}</div>
                       <div className="user-link profile-details">
-                        https://www.fightcompanion.io/aainsley
+                        https://www.fightcompanion.io/{user?.userName}
                       </div>
                       <div className="promotion-company profile-details">
                         Fight Promotion Company: {user?.promotionCompany}
@@ -283,7 +283,7 @@ const MainContent = () => {
                         className="img-2"
                         onClick={() => {
                           navigator.clipboard.writeText(
-                            "https://www.fightcompanion.io/aainsley"
+                            ` https://www.fightcompanion.io/${user?.userName}`
                           );
                           toast.info("Copied to clipboard");
                         }}

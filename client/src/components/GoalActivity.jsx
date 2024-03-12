@@ -8,8 +8,10 @@ import { Spinner } from "react-bootstrap";
 import { TimeAndDate, imgBasePath } from "../utils/Helper";
 import defaultFighterImg from "../img/brand-logo.png";
 import useAuth from "../services/useAuth";
+import ChatModal from "./ChatModal";
 const GoalActivity = ({ token }) => {
   const auth = useAuth();
+  const [showChatModal, setshowChatModal] = useState(false);
   const userId = JSON.parse(auth?.user)?._id;
 
   const [goalTrackers, setGoalTrackers] = useState({
@@ -153,7 +155,12 @@ const GoalActivity = ({ token }) => {
                       )}
                       &nbsp;
                       {/* link 02 fpr message */}
-                      <Link to="#" className="view-msg link-text" type="btn">
+                      <button
+                        to="#"
+                        className="view-msg link-text"
+                        type="btn"
+                        onClick={() => setshowChatModal(true)}
+                      >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           width="26"
@@ -172,7 +179,7 @@ const GoalActivity = ({ token }) => {
                           />
                         </svg>
                         <span className="mx-1">Messages</span>
-                      </Link>
+                      </button>
                     </div>
                   </div>
                   <div className="gift-status text-end">
@@ -198,6 +205,11 @@ const GoalActivity = ({ token }) => {
           <Spinner animation="border" variant="danger" />
         </div>
       )}
+
+      <ChatModal
+        showChatModal={showChatModal}
+        setshowChatModal={setshowChatModal}
+      />
     </div>
   );
 };
