@@ -8,10 +8,12 @@ import defaultFighterImg from "../img/brand-logo.png";
 import useAuth from "../services/useAuth";
 import { Spinner } from "react-bootstrap";
 import { TimeAndDate, imgBasePath } from "../utils/Helper";
+import ChatModal from "./ChatModal";
 
 const SubscriptionActivity = ({ token }) => {
   const auth = useAuth();
   const userId = JSON.parse(auth?.user)?._id;
+  const [showChatModal, setshowChatModal] = useState(false);
 
   const [subscriptionTrackers, setsubscriptionTrackers] = useState({
     data: [],
@@ -197,7 +199,11 @@ const SubscriptionActivity = ({ token }) => {
                         )}
                         &nbsp;
                         {/* link 02 fpr message */}
-                        <Link to="#" className="view-msg link-text" type="btn">
+                        <button
+                          onClick={() => setshowChatModal(true)}
+                          className="view-msg link-text"
+                          type="btn"
+                        >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="26"
@@ -216,7 +222,7 @@ const SubscriptionActivity = ({ token }) => {
                             />
                           </svg>
                           <span className="mx-1">Messages</span>
-                        </Link>
+                        </button>
                       </div>
                     </div>
                     <div className="gift-status text-end">
@@ -243,6 +249,11 @@ const SubscriptionActivity = ({ token }) => {
           <Spinner animation="border" variant="danger" />
         </div>
       )}
+
+      <ChatModal
+        showChatModal={showChatModal}
+        setshowChatModal={setshowChatModal}
+      />
     </>
   );
 };
