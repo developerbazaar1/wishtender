@@ -6,6 +6,8 @@ const Transaction = require("../models/transaction");
 const mongoose = require("mongoose");
 const transaction = require("../models/transaction");
 const goal = require("../models/goal");
+const chat = require("../models/ChatModal");
+const message = require("../models/MessageModal");
 
 exports.checkout = async (req, res, next) => {
   try {
@@ -133,11 +135,54 @@ exports.updateOrder = async (req, res, next) => {
         itemTransactions.push(itemTransaction);
       }
       // Save all item transactions
-      await Transaction.insertMany(itemTransactions);
+      const insertedTransactions = await Transaction.insertMany(
+        itemTransactions
+      );
+      const createChat = [];
+
+      insertedTransactions.forEach((transactionElement) => {
+        let chatItem = new chat();
+        if (transactionElement.shopType === "goal") {
+          chatItem = {
+            transactionId: transactionElement._id,
+            ReciverId: mongoose.Types.ObjectId(transactionElement.fighterId),
+            senderId: mongoose.Types.ObjectId(transactionElement.userId),
+          };
+        } else {
+          chatItem = {
+            transactionId: transactionElement._id,
+            ReciverId: mongoose.Types.ObjectId(transactionElement.creatorId),
+            senderId: mongoose.Types.ObjectId(transactionElement.userId),
+          };
+        }
+
+        createChat.push(chatItem);
+      });
+
+      const createdChart = await chat.insertMany(createChat);
+
+      createdChart.forEach(async (chatelement) => {
+        const res = await message.create({
+          chatId: chatelement._id,
+          content: insertedTransactions.forEach((element) => {
+            if (element._id === chatelement.transactionId) {
+              return element.senderMessage;
+            }
+          }),
+        });
+        const updatedChat = await chat.findByIdAndUpdate(chatelement._id, {
+          $set: {
+            latestMessage: res._id,
+          },
+        });
+      });
+      console.log("Inserted transaction Document", insertedTransactions);
       // Remove cart items using cartItemIds stored in the order
       await User.findByIdAndUpdate(order.userId, {
         $pull: { cart: { _id: { $in: order.cartItemIds } } },
       });
+
+      // const res = await chat.create({});
     }
     res
       .status(200)

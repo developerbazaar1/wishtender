@@ -4,6 +4,7 @@ const Schema = mongoose.Schema;
 const transactionSchema = new Schema(
   {
     userId: {
+      // the one who created the transaction
       type: String,
       required: true,
     },
@@ -47,6 +48,7 @@ const transactionSchema = new Schema(
       default: "goal",
     },
     fighterId: {
+      // reciverId when shopType surjprise
       type: String,
     },
     goalId: {
@@ -62,6 +64,7 @@ const transactionSchema = new Schema(
       type: String,
     },
     creatorId: {
+      // reciverId when shopType goal
       type: String,
     },
     creatorName: {

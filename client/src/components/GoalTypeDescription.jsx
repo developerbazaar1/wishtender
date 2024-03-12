@@ -19,7 +19,7 @@ export const GoalCrowdDescription = ({
       <div className="divii-5">
         <div className="divii-6">
           <div className="divii-7">{totalPercentage || 20}%</div>
-          <div className="divii-8">Granted</div>
+          <div className="divii-8">Funded</div>
         </div>
 
         <div className="divii-9">

@@ -147,15 +147,13 @@ export const TimeAndDate = (dateTimeString, type) => {
     if (
       currentDate.getDate() === targetDate.getDate() &&
       currentDate.getMonth() === targetDate.getMonth() &&
-      currentDate.getFullYear() &&
-      targetDate.getFullYear()
+      currentDate.getFullYear() === targetDate.getFullYear() // Corrected condition
     ) {
       return "today";
     } else if (
-      currentDate.getDate() !== targetDate.getDate() &&
+      currentDate.getDate() - 1 === targetDate.getDate() && // Corrected condition
       currentDate.getMonth() === targetDate.getMonth() &&
-      currentDate.getFullYear() &&
-      targetDate.getFullYear()
+      currentDate.getFullYear() === targetDate.getFullYear()
     ) {
       return "yesterday";
     } else {

@@ -209,7 +209,8 @@ const OtherFighterProfile = () => {
                         {fighterData?.data?.userName}
                       </div>
                       <div className="user-link profile-details">
-                        https://www.fightcompanion.io/aainsley
+                        https://www.fightcompanion.io/{" "}
+                        {fighterData?.data?.userName}
                       </div>
                       <div className="promotion-company profile-details">
                         Fight Promation Company:{" "}
@@ -221,7 +222,8 @@ const OtherFighterProfile = () => {
                         className="img-2"
                         onClick={() => {
                           navigator.clipboard.writeText(
-                            "https://www.fightcompanion.io/aainsley"
+                            `https://www.fightcompanion.io/
+                        ${fighterData?.data?.userName}`
                           );
                           toast.info("Copied to clipboard");
                         }}

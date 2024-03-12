@@ -130,7 +130,7 @@ const CartGoalDetails = ({ cart, updateCart, globalLoading, setRefresh }) => {
           setRefresh={setRefresh}
         />
         <button onClick={() => setShowAddmessageModal(true)}>
-          Add Message
+          {cart.senderMessage ? "Edit Message" : "Add Message"}
         </button>
       </td>
       <td className="remove-product">

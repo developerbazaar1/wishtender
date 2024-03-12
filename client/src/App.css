@@ -4503,6 +4503,15 @@ span.cal-info {
   background: var(--Surface-General-Black, #141414);
 }
 
+.x-post-btn > button {
+  border-radius: 10px;
+  background: #e8e8e8;
+  padding: 0.5px 4px;
+  display: flex;
+  align-items: center;
+  border: unset;
+}
+
 @keyframes colorSlide {
   0% {
     background-color: #152a68;
@@ -4539,3 +4548,124 @@ span.cal-info {
   top: 50%;
   left: 50%;
 } /* css for spinner end*/
+
+/* chat modal css start */
+
+.messanger {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: column;
+  flex-direction: column;
+}
+.messanger .messages {
+  -webkit-box-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+  margin: 10px 0;
+  padding: 0 1.2rem;
+  max-height: 260px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.messanger .messages .message {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  margin-bottom: 15px;
+  -webkit-box-align: start;
+  -ms-flex-align: start;
+  align-items: flex-start;
+}
+.messanger .messages .message.me {
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: reverse;
+  -ms-flex-direction: row-reverse;
+  flex-direction: row-reverse;
+}
+.messanger .messages .message.me img {
+  margin-right: 0;
+  margin-left: 15px;
+}
+.messanger .messages .message.me .info {
+  background-color: #00695c;
+  color: #fff;
+}
+.messanger .messages .message.me .info:before {
+  display: none;
+}
+.messanger .messages .message.me .info:after {
+  position: absolute;
+  right: -13px;
+  top: 0;
+  content: "";
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 16px 16px 0;
+  border-color: transparent #00695c transparent transparent;
+  -webkit-transform: rotate(270deg);
+  transform: rotate(270deg);
+}
+.messanger .messages .message img {
+  border-radius: 50%;
+  margin-right: 15px;
+  max-width: 45px;
+}
+.messanger .messages .message .info {
+  margin: 0;
+  background-color: #ddd;
+  padding: 5px 10px;
+  border-radius: 3px;
+  position: relative;
+  -ms-flex-item-align: start;
+  align-self: flex-start;
+}
+.messanger .messages .message .info:before {
+  position: absolute;
+  left: -14px;
+  top: 0;
+  content: "";
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 16px 16px 0;
+  border-color: transparent #ddd transparent transparent;
+}
+.messanger .sender {
+  padding: 0 1rem;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+}
+.messanger .sender input[type="text"] {
+  -webkit-box-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+  border: 1px solid #028071;
+  outline-color: #026257;
+
+  padding: 5px 10px;
+}
+.messanger .sender button {
+  border-radius: 0;
+}
+#chat-modal-container {
+  max-width: 464px;
+}
+#chat-modal-container > div {
+  border-radius: 14px;
+  -webkit-border-radius: 14px;
+  -moz-border-radius: 14px;
+  -ms-border-radius: 14px;
+  -o-border-radius: 14px;
+  padding: 1rem 0rem !important;
+}
+
+.messanger-modal-body .tile-title {
+  text-align: start;
+  margin-left: 1rem;
+}
+/* chat modal css end */
