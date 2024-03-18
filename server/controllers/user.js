@@ -257,7 +257,6 @@ exports.getFighters = async (req, res, next) => {
       role: "fighter",
       status: "true",
     };
-
     // Check if a specific key is provided for random order
     if (req.query.random) {
       // If a random key is provided, fetch data in random order
@@ -269,7 +268,13 @@ exports.getFighters = async (req, res, next) => {
             _id: { $ne: mongoose.Types.ObjectId(req.userId) },
           },
         }, // Exclude req.userId
-        { $sample: { size: 10 } }, // Adjust the sample size as needed
+        {
+          $addFields: {
+            followersCount: { $size: "$followers" },
+          },
+        }, // Add a new field to calculate followers count
+        { $sort: { followersCount: -1 } }, // Sort by followers count in descending order
+        { $limit: 10 }, // Limit the result size
         {
           $project: {
             password: 0,
@@ -290,7 +295,7 @@ exports.getFighters = async (req, res, next) => {
         ...getSearchQuery(req.query.search),
         _id: { $ne: mongoose.Types.ObjectId(req.userId) }, // Exclude req.userId
       })
-        .select("-password -followers -cart -agreeTermConditions")
+        .select("-password  -cart -agreeTermConditions")
         .limit(10); // Limit the result size as needed
       res.status(200).json({
         status: "success",
@@ -538,6 +543,41 @@ exports.updateUserSocialLinks = async (req, res, next) => {
     res.status(200).json({
       status: "success",
       message: "Social links updated successfully",
+      data: user,
+    });
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+    }
+    next(error);
+  }
+};
+
+exports.removeUserSocialLink = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const { socialLinkId } = req.body;
+    // Check if the user exists
+    const user = await User.findById(userId).select(
+      "-password -followers -cart -agreeTermConditions"
+    );
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    // Check if the social link exists
+    const socialLinkIndex = user.socialLinks.findIndex(
+      (link) => link._id.toString() === socialLinkId
+    );
+    if (socialLinkIndex === -1) {
+      return res.status(404).json({ error: "Social link not found" });
+    }
+    // Remove the social link from the user
+    user.socialLinks.splice(socialLinkIndex, 1);
+    // Save the user with updated social links
+    await user.save();
+    res.status(200).json({
+      status: "success",
+      message: "Social link removed successfully",
       data: user,
     });
   } catch (error) {

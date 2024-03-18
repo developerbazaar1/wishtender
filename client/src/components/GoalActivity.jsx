@@ -9,8 +9,13 @@ import { TimeAndDate, imgBasePath } from "../utils/Helper";
 import defaultFighterImg from "../img/brand-logo.png";
 import useAuth from "../services/useAuth";
 import ChatModal from "./ChatModal";
+import { io } from "socket.io-client";
+
+const ENDPOINT = process.env.REACT_APP_SOCKET_API_URL;
+var socket, selectedChatCompare;
 const GoalActivity = ({ token }) => {
   const auth = useAuth();
+  const [selectedChatActivity, setSelectedChatActivity] = useState();
   const [showChatModal, setshowChatModal] = useState(false);
   const userId = JSON.parse(auth?.user)?._id;
 
@@ -20,10 +25,15 @@ const GoalActivity = ({ token }) => {
     message: "",
   });
   const { globalLoading, startGloablLoading, stopGlobalLoading } = useLoading();
+
+  function HandleOpenHideChatModal() {
+    setshowChatModal((val) => !val);
+  }
+
   const getGoalActivity = async () => {
     try {
       startGloablLoading();
-      const res = await orderApi.fetchActivity(token);
+      const res = await orderApi.fetchActivity(token, "", "", "goal", "single");
       console.log(res);
       setGoalTrackers({
         data: res?.data?.data,
@@ -46,7 +56,15 @@ const GoalActivity = ({ token }) => {
     getGoalActivity();
   }, []);
 
-  console.log(goalTrackers?.data);
+  useEffect(() => {
+    socket = io(ENDPOINT);
+    socket.emit("setup", JSON.parse(auth?.user));
+    socket.on("connected", () => {
+      console.log("connection ");
+    });
+  }, []);
+
+  // console.log(goalTrackers?.data);
 
   return (
     <div className="goal-tracker-content">
@@ -159,7 +177,10 @@ const GoalActivity = ({ token }) => {
                         to="#"
                         className="view-msg link-text"
                         type="btn"
-                        onClick={() => setshowChatModal(true)}
+                        onClick={() => {
+                          setSelectedChatActivity(goalActivity?._id);
+                          HandleOpenHideChatModal();
+                        }}
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -206,10 +227,17 @@ const GoalActivity = ({ token }) => {
         </div>
       )}
 
-      <ChatModal
-        showChatModal={showChatModal}
-        setshowChatModal={setshowChatModal}
-      />
+      {selectedChatActivity && (
+        <ChatModal
+          showChatModal={showChatModal}
+          setshowChatModal={setshowChatModal}
+          selectedChatActivity={selectedChatActivity}
+          setSelectedChatActivity={setSelectedChatActivity}
+          user={JSON.parse(auth?.user)}
+          token={token}
+          socket={socket}
+        />
+      )}
     </div>
   );
 };

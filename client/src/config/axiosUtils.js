@@ -251,3 +251,26 @@ export const orderApi = {
     });
   },
 };
+
+export const messageApi = {
+  FetchChatData: async (token, transactionId) => {
+    return await api.request({
+      url: `/message/getActivity-message?transactionId=${transactionId}`,
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  },
+
+  SendMessage: async (token, data) => {
+    return await api.request({
+      url: "/message/sendActivity-message",
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      data: data,
+    });
+  },
+};

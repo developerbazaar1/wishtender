@@ -5,6 +5,7 @@ import useFollowed from "../services/useFollowed";
 
 const FavoriteFighter = () => {
   const followed = useFollowed()?.followed;
+  console.log(followed);
 
   return (
     <>

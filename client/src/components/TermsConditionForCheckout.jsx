@@ -30,6 +30,7 @@ const TermsConditionForCheckout = ({ id, token, setRefresh }) => {
           transactionId: "1121434324343",
           paidDate: getCurrentDate,
         };
+        // return;
         const response = await orderApi.updateOrder(
           token,
           res?.data?.order?._id,

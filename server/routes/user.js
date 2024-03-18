@@ -45,5 +45,7 @@ router.post("/:fighterId/:action", isAuth, userController.manageFollow);
 router.get("/followed-fighters", isAuth, userController.getFollowedFighters);
 
 router.get("/fighter/:userName", isAuth, userController.getFighter);
+//route to delte the social link
+router.put("/social-links/remove", isAuth, userController.removeUserSocialLink);
 
 module.exports = router;

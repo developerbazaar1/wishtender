@@ -128,6 +128,7 @@ exports.updateOrder = async (req, res, next) => {
           shopType: item.shopType,
           fighterId: item.fighterId,
           goalId: item.goalId,
+          goalType: item.goalType,
           creatorId: item.creatorId,
           quantity: item.quantity,
           senderMessage: item.senderMessage,
@@ -145,13 +146,13 @@ exports.updateOrder = async (req, res, next) => {
         if (transactionElement.shopType === "goal") {
           chatItem = {
             transactionId: transactionElement._id,
-            ReciverId: mongoose.Types.ObjectId(transactionElement.fighterId),
+            ReciverId: mongoose.Types.ObjectId(transactionElement.creatorId),
             senderId: mongoose.Types.ObjectId(transactionElement.userId),
           };
         } else {
           chatItem = {
             transactionId: transactionElement._id,
-            ReciverId: mongoose.Types.ObjectId(transactionElement.creatorId),
+            ReciverId: mongoose.Types.ObjectId(transactionElement.fighterId),
             senderId: mongoose.Types.ObjectId(transactionElement.userId),
           };
         }
@@ -162,21 +163,25 @@ exports.updateOrder = async (req, res, next) => {
       const createdChart = await chat.insertMany(createChat);
 
       createdChart.forEach(async (chatelement) => {
+        let content = insertedTransactions.find((element) => {
+          if (element._id === chatelement.transactionId) {
+            return element.senderMessage;
+          }
+        });
+
         const res = await message.create({
           chatId: chatelement._id,
-          content: insertedTransactions.forEach((element) => {
-            if (element._id === chatelement.transactionId) {
-              return element.senderMessage;
-            }
-          }),
+          content: content?.senderMessage || "My Contribution",
+          messageSender: mongoose.Types.ObjectId(req.userId),
         });
+
         const updatedChat = await chat.findByIdAndUpdate(chatelement._id, {
           $set: {
             latestMessage: res._id,
           },
         });
       });
-      console.log("Inserted transaction Document", insertedTransactions);
+
       // Remove cart items using cartItemIds stored in the order
       await User.findByIdAndUpdate(order.userId, {
         $pull: { cart: { _id: { $in: order.cartItemIds } } },
@@ -212,14 +217,16 @@ exports.getActivityGoals = async (req, res, next) => {
     } else {
       shopType = "goal";
     }
-    let goalType;
-    if (req.query.goalType) {
-      goalType = req.query.goalType;
-    }
+
     // Define the query object
     const query = {
       shopType: shopType,
     };
+
+    if (req.query.goalType) {
+      query["goalType"] = req.query.goalType;
+      // goalType = req.query.goalType;
+    }
 
     let goals; // Declare goals variable outside of the conditional blocks
     if (shopType === "goal") {
