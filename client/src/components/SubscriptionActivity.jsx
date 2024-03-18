@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import Accordion from "react-bootstrap/Accordion";
 import { useLoading } from "../features/loadingHooks";
 import { toast } from "react-toastify";
@@ -9,12 +9,15 @@ import useAuth from "../services/useAuth";
 import { Spinner } from "react-bootstrap";
 import { TimeAndDate, imgBasePath } from "../utils/Helper";
 import ChatModal from "./ChatModal";
-
+import { io } from "socket.io-client";
+const ENDPOINT = process.env.REACT_APP_SOCKET_API_URL;
+var socket, selectedChatCompare;
 const SubscriptionActivity = ({ token }) => {
   const auth = useAuth();
   const userId = JSON.parse(auth?.user)?._id;
   const [showChatModal, setshowChatModal] = useState(false);
-
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [selectedChatActivity, setSelectedChatActivity] = useState();
   const [subscriptionTrackers, setsubscriptionTrackers] = useState({
     data: [],
     status: "",
@@ -22,13 +25,17 @@ const SubscriptionActivity = ({ token }) => {
   });
 
   const { globalLoading, startGloablLoading, stopGlobalLoading } = useLoading();
+  function HandleOpenHideChatModal() {
+    setshowChatModal((val) => !val);
+  }
+
   const getGoalActivity = async () => {
     try {
       startGloablLoading();
       const res = await orderApi.fetchActivity(
         token,
-        "",
-        "",
+        searchParams.get("sending") || "",
+        searchParams.get("receiving") || "",
         "",
         "subscription"
       );
@@ -51,6 +58,14 @@ const SubscriptionActivity = ({ token }) => {
 
   useEffect(() => {
     getGoalActivity();
+  }, [searchParams.get("receiving"), searchParams.get("sending")]);
+
+  useEffect(() => {
+    socket = io(ENDPOINT);
+    socket.emit("setup", JSON.parse(auth?.user));
+    socket.on("connected", () => {
+      console.log("connection ");
+    });
   }, []);
 
   return (
@@ -72,20 +87,20 @@ const SubscriptionActivity = ({ token }) => {
             </svg>
           </div>
           <ul className="dropdown-menu subscription-drop-down-list">
-            <li>
-              <a className="dropdown-item" href="#">
-                All
-              </a>
+            <li role="button" onClick={() => setSearchParams({ all: "all" })}>
+              <span className="dropdown-item">All</span>
             </li>
-            <li>
-              <a className="dropdown-item" href="#">
-                Sending
-              </a>
+            <li
+              role="button"
+              onClick={() => setSearchParams({ sending: userId })}
+            >
+              <span className="dropdown-item">Sending</span>
             </li>
-            <li>
-              <a className="dropdown-item" href="#">
-                Receiving
-              </a>
+            <li
+              role="button"
+              onClick={() => setSearchParams({ receiving: userId })}
+            >
+              <span className="dropdown-item">Receiving</span>
             </li>
           </ul>
         </div>
@@ -200,7 +215,10 @@ const SubscriptionActivity = ({ token }) => {
                         &nbsp;
                         {/* link 02 fpr message */}
                         <button
-                          onClick={() => setshowChatModal(true)}
+                          onClick={() => {
+                            setSelectedChatActivity(subActivity?._id);
+                            HandleOpenHideChatModal();
+                          }}
                           className="view-msg link-text"
                           type="btn"
                         >
@@ -250,10 +268,17 @@ const SubscriptionActivity = ({ token }) => {
         </div>
       )}
 
-      <ChatModal
-        showChatModal={showChatModal}
-        setshowChatModal={setshowChatModal}
-      />
+      {selectedChatActivity && (
+        <ChatModal
+          showChatModal={showChatModal}
+          setshowChatModal={setshowChatModal}
+          selectedChatActivity={selectedChatActivity}
+          setSelectedChatActivity={setSelectedChatActivity}
+          user={JSON.parse(auth?.user)}
+          token={token}
+          socket={socket}
+        />
+      )}
     </>
   );
 };

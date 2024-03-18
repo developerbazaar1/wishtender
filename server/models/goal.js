@@ -11,6 +11,9 @@ const goalSchema = new Schema(
       type: Number,
       required: true,
     },
+    goalOrderBy: {
+      type: Number,
+    },
     goalType: {
       type: String,
       enum: ["single", "subscription", "crowd"],

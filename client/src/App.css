@@ -4567,6 +4567,7 @@ span.cal-info {
   margin: 10px 0;
   padding: 0 1.2rem;
   max-height: 260px;
+  min-height: 260px;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -4612,7 +4613,8 @@ span.cal-info {
 .messanger .messages .message img {
   border-radius: 50%;
   margin-right: 15px;
-  max-width: 45px;
+  width: 45px;
+  height: 45px;
 }
 .messanger .messages .message .info {
   margin: 0;

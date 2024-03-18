@@ -1,5 +1,5 @@
 const express = require("express");
-const { body, file } = require("express-validator");
+const { body, file, param } = require("express-validator");
 
 const goalController = require("../controllers/goal");
 const isAuth = require("../middleware/is-auth");
@@ -50,6 +50,55 @@ router.post(
   ],
 
   goalController.create
+);
+
+// Edit goalOrderBy for multiple goals
+router.put(
+  "/edit/order",
+  isAuth,
+  checkRole("fighter"),
+  [
+    body("goals")
+      .isArray({ min: 1 })
+      .withMessage("At least one goal data is required"),
+    body("goals.*.goalId")
+      .notEmpty()
+      .withMessage("Goal ID is required")
+      .isMongoId()
+      .withMessage("Invalid goal ID"),
+    body("goals.*.goalOrderBy")
+      .notEmpty()
+      .withMessage("Goal order number is required")
+      .isInt({ min: 1 })
+      .withMessage("Invalid goal order number"),
+  ],
+  goalController.editOrderByMultiple
+);
+
+// Route for editing a goal
+router.put(
+  "/edit/:goalId",
+  upload.single("goalImage"), // Add multer middleware for goalImage upload
+  isAuth,
+  checkRole("fighter"),
+  [
+    param("goalId").notEmpty().withMessage("Goal ID is required"),
+    body("goalName").optional().trim(),
+    body("goalPrice").optional(),
+    body("goalType").optional().trim(),
+    body("goalCategory").optional().trim(),
+    body("goalPurchaseType").optional().trim(),
+    body("subscriptionType").optional().trim(),
+  ],
+  goalController.edit
+);
+
+// delete goal
+router.delete(
+  "/delete/:goalId",
+  isAuth,
+  checkRole("fighter"),
+  goalController.delete
 );
 
 module.exports = router;

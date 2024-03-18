@@ -35,7 +35,7 @@ const SocialLinkModal1 = ({ showSocilMdl1, setShowSocilMdl1, socialLink }) => {
         JSON.parse(auth?.token),
         formData
       );
-      console.log(res);
+      // console.log(res);
       if (res.status === 200) {
         toast.success(res?.data?.message);
         dispatch(

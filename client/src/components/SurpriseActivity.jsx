@@ -10,20 +10,28 @@ import { Spinner } from "react-bootstrap";
 import { TimeAndDate, imgBasePath, nextPaymentDate } from "../utils/Helper";
 import { useSearchParams } from "react-router-dom";
 import ChatModal from "./ChatModal";
-
+import { io } from "socket.io-client";
+const ENDPOINT = process.env.REACT_APP_SOCKET_API_URL;
+var socket, selectedChatCompare;
 const SubscriptionActivity = ({ token }) => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const [selectedChatActivity, setSelectedChatActivity] = useState();
   const [showChatModal, setshowChatModal] = useState(false);
   const auth = useAuth();
   const userId = JSON.parse(auth?.user)?._id;
 
-  const [subscriptionTrackers, setsubscriptionTrackers] = useState({
+  const [SurpriseTracker, setSurpriseTracker] = useState({
     data: [],
     status: "",
     message: "",
   });
 
   const { globalLoading, startGloablLoading, stopGlobalLoading } = useLoading();
+
+  //function to handle open-hide modal
+  function HandleOpenHideChatModal() {
+    setshowChatModal((val) => !val);
+  }
   const getSubActivity = async () => {
     try {
       startGloablLoading();
@@ -31,16 +39,17 @@ const SubscriptionActivity = ({ token }) => {
         token,
         searchParams.get("sending") || "",
         searchParams.get("receiving") || "",
-        "",
-        "subscription"
+        "surprise",
+        ""
       );
-      setsubscriptionTrackers({
+      console.log("res the data", res);
+      setSurpriseTracker({
         data: res?.data?.data,
         status: "success",
         message: "data fetched successfully",
       });
     } catch (e) {
-      setsubscriptionTrackers({
+      setSurpriseTracker({
         data: [],
         status: "success",
         message: e?.response?.data?.message || e?.response?.data?.error,
@@ -54,6 +63,14 @@ const SubscriptionActivity = ({ token }) => {
   useEffect(() => {
     getSubActivity();
   }, [searchParams.get("receiving"), searchParams.get("sending")]);
+
+  useEffect(() => {
+    socket = io(ENDPOINT);
+    socket.emit("setup", JSON.parse(auth?.user));
+    socket.on("connected", () => {
+      console.log("connection ");
+    });
+  }, []);
 
   return (
     <>
@@ -92,7 +109,7 @@ const SubscriptionActivity = ({ token }) => {
           </ul>
         </div>
       </div>
-      {subscriptionTrackers?.data?.map((subActivity, index) => (
+      {SurpriseTracker?.data?.map((subActivity, index) => (
         <div className="goal-subscription-content" key={subActivity?._id}>
           {/* today goal section */}
           <div className="today-goal-section">
@@ -113,8 +130,8 @@ const SubscriptionActivity = ({ token }) => {
                     <img
                       // loading="lazy"
                       src={
-                        subActivity?.creatorId?.profileImage
-                          ? `${imgBasePath}/${subActivity?.creatorId?.profileImage}`
+                        subActivity?.fighterId?.profileImage
+                          ? `${imgBasePath}/${subActivity?.fighterId?.profileImage}`
                           : defaultFighterImg
                       }
                       className="fighter-image"
@@ -122,13 +139,13 @@ const SubscriptionActivity = ({ token }) => {
                     />
                     <div className="fighter-details">
                       <div className="fighter-name">
-                        {subActivity?.creatorId?.firstName +
+                        {subActivity?.fighterId?.firstName +
                           " " +
-                          subActivity?.creatorId?.lastName}
+                          subActivity?.fighterId?.lastName}
                       </div>
                       <div className="fighter-info">
-                        [{TimeAndDate(subActivity?.createdAt, "time")}] - [
-                        {subActivity?.goalId?.goalName}]
+                        [{TimeAndDate(subActivity?.createdAt, "time")}]
+                        {/* - [{subActivity?.goalId?.goalName}] */}
                       </div>
                     </div>
                   </div>
@@ -170,7 +187,7 @@ const SubscriptionActivity = ({ token }) => {
                       </div>
                       <div className="subs-type mt-1">
                         <h6>
-                          <strong>Subscription</strong>{" "}
+                          <strong>Surprise</strong>{" "}
                           <span className="badge rounded-pill text-dark bg-light">
                             {subActivity?.goalId?.subscriptionType}
                           </span>
@@ -211,7 +228,10 @@ const SubscriptionActivity = ({ token }) => {
                         &nbsp;
                         {/* link 02 fpr message */}
                         <button
-                          onClick={() => setshowChatModal(true)}
+                          onClick={() => {
+                            setSelectedChatActivity(subActivity?._id);
+                            HandleOpenHideChatModal();
+                          }}
                           className="view-msg link-text"
                           type="btn"
                         >
@@ -261,10 +281,17 @@ const SubscriptionActivity = ({ token }) => {
         </div>
       )}
 
-      <ChatModal
-        showChatModal={showChatModal}
-        setshowChatModal={setshowChatModal}
-      />
+      {selectedChatActivity && (
+        <ChatModal
+          showChatModal={showChatModal}
+          setshowChatModal={setshowChatModal}
+          selectedChatActivity={selectedChatActivity}
+          setSelectedChatActivity={setSelectedChatActivity}
+          user={JSON.parse(auth?.user)}
+          token={token}
+          socket={socket}
+        />
+      )}
     </>
   );
 };

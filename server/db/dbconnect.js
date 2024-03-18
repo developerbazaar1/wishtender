@@ -6,7 +6,7 @@ async function dbConnect() {
     .connect(process.env.DB_URL, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      useFindAndModify: false
+      useFindAndModify: false,
     })
     .then((result) => {
       console.log("Conneted to database");
