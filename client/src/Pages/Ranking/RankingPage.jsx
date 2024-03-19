@@ -1,10 +1,10 @@
-import { Link, useLocation, useParams } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useLoading } from "../../features/loadingHooks";
 import { orderApi } from "../../config/axiosUtils";
 import useAuth from "../../services/useAuth";
 import { useEffect, useState } from "react";
 import { RankingIterval, imgBasePath } from "../../utils/Helper";
-import { toast } from "react-toastify";
+// import { toast } from "react-toastify";
 import { Spinner } from "react-bootstrap";
 
 export default function RankingPage() {

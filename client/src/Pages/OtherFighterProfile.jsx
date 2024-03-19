@@ -2,11 +2,6 @@ import React, { useEffect, useState } from "react";
 import { IoCopyOutline } from "react-icons/io5";
 import { FaRegCalendarAlt } from "react-icons/fa";
 import { Link, useParams, useSearchParams } from "react-router-dom";
-import Goals from "../components/Goals";
-import { DragDropContext } from "react-beautiful-dnd";
-import ProductGoal from "../img/product-gloves.png";
-import Massage from "../img/massage.png";
-import dubmbels from "../img/dumbels.png";
 import SendSurpriseModal from "../components/SendSurpriseModal";
 import { userApi } from "../config/axiosUtils";
 import useAuth from "../services/useAuth";
@@ -19,6 +14,7 @@ import { Spinner } from "react-bootstrap";
 import useFollowed from "../services/useFollowed";
 import { setFollowed } from "../features/fetchFollowedSlice";
 import { useDispatch } from "react-redux";
+import OtherFighterGoals from "../components/OtherFighterGoals";
 const OtherFighterProfile = () => {
   const following = useFollowed()?.followed;
   const dispatch = useDispatch();
@@ -33,53 +29,6 @@ const OtherFighterProfile = () => {
   const token = JSON.parse(useAuth()?.token);
   const userName = useParams()?.userName;
   const { globalLoading, startGloablLoading, stopGlobalLoading } = useLoading();
-
-  const [goals, setGoals] = useState([
-    {
-      name: "Gloves",
-      price: "CA$200.00",
-      goalImg: ProductGoal,
-      ProgessBar: true,
-      frequency: "Daily",
-      id: 636,
-    },
-    {
-      name: "Everyday Coffee",
-      price: "CA$200.00",
-      goalImg: Massage,
-      ProgessBar: false,
-      id: 285,
-    },
-    {
-      name: "dubmbels",
-      price: "CA$200.00",
-      goalImg: dubmbels,
-      ProgessBar: true,
-      frequency: "Monthly",
-      id: 493,
-    },
-  ]);
-  const onDragEnd = (result) => {
-    const { destination, source } = result;
-
-    if (!destination) {
-      return;
-    }
-    if (
-      destination.droppableId === source.droppableId &&
-      destination.index === source.index
-    ) {
-      return;
-    }
-
-    let active = goals;
-    let add;
-    add = active[source.index];
-    active.splice(source.index, 1);
-    active.splice(destination.index, 0, add);
-
-    setGoals(active);
-  };
 
   // this function is used to fetched the fighter data
   const loadFighterData = async () => {
@@ -263,11 +212,19 @@ const OtherFighterProfile = () => {
                         {castDate(fighterData?.data?.createdAt)}
                       </div>
                       <div className="d-flex gap-1 align-items-center justify-content-end">
-                        {fighterData?.data?.socialLinks?.map((link) => (
-                          <Link to={link?.link} key={link._id} target="_blank">
-                            {getSocialIcon(link?.platform)}
-                          </Link>
-                        ))}
+                        {fighterData?.data?.socialLinks?.map(
+                          (link) =>
+                            link?.status === true && (
+                              <Link
+                                to={link?.link}
+                                key={link._id}
+                                target="_blank"
+                                className="social-media-links"
+                              >
+                                {getSocialIcon(link?.platform)}
+                              </Link>
+                            )
+                        )}
                       </div>
                     </div>
                   </div>
@@ -377,12 +334,10 @@ const OtherFighterProfile = () => {
 
           <div className="col-md-12 col-sm-12 col-xs-12 col-lg-12">
             {fighterData?.data?.goals?.length > 0 && !globalLoading ? (
-              <DragDropContext onDragEnd={onDragEnd}>
-                <Goals
-                  goals={fighterData?.data?.goals}
-                  currency={fighterData?.data?.currency}
-                />
-              </DragDropContext>
+              <OtherFighterGoals
+                goals={fighterData?.data?.goals}
+                currency={fighterData?.data?.currency}
+              />
             ) : (
               <div className="text-center">
                 {" "}

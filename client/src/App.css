@@ -3202,8 +3202,29 @@ img.number-icon {
   -o-border-radius: 10rem;
 }
 
+.social-media-links:hover {
+  scale: 1.1;
+}
+
 .social-picker {
   cursor: pointer;
+}
+.social-picker:hover {
+  scale: 1.1;
+}
+
+.remove-social-btn {
+  position: absolute;
+  right: -7px;
+  top: -11px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background-color: inherit;
+}
+
+.remove-social-btn:hover {
+  scale: 1.1;
 }
 
 .sec-head {

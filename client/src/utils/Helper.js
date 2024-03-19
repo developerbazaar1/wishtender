@@ -234,3 +234,9 @@ export const FundedPercentage = (creditedAmount, targetAmount) => {
 
   return totalPercent;
 };
+
+//functin that return the calculated service charge for the fighter.
+
+export const serviceCharge = (totalAmount) => {
+  return totalAmount * 0.15;
+};

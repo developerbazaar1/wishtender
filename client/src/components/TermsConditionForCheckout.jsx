@@ -72,7 +72,8 @@ const TermsConditionForCheckout = ({ id, token, setRefresh }) => {
                       {...register("termscondition", {
                         required: {
                           value: true,
-                          message: "Please select the Terms&Condition",
+                          message:
+                            "You must agree to the terms and conditions before proceeding with checkout",
                         },
                       })}
                     />

@@ -304,7 +304,12 @@ const MainContent = () => {
 
                       <div className="d-flex gap-1 align-items-center justify-content-end">
                         {user?.socialLinks?.map((link) => (
-                          <Link to={link?.link} key={link._id} target="_blank">
+                          <Link
+                            to={link?.link}
+                            key={link._id}
+                            target="_blank"
+                            className="social-media-links"
+                          >
                             {getSocialIcon(link?.platform)}
                           </Link>
                         ))}

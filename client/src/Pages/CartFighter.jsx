@@ -9,9 +9,11 @@ import { toast } from "react-toastify";
 import CartGoalDetails from "../components/CartGoalDetails";
 import TotalPrice from "../components/TotalPrice";
 import TopSection from "../components/TopSection";
-
+import { setCart } from "../features/cartSlice";
+import { useDispatch } from "react-redux";
 const CartFighter = () => {
   const { globalLoading, startGloablLoading, stopGlobalLoading } = useLoading();
+  const dispatch = useDispatch();
   const [refresh, setRefresh] = useState(false);
   const [cartData, setCartData] = useState({
     data: [],
@@ -27,6 +29,22 @@ const CartFighter = () => {
     try {
       const res = await cartApi.getCart(token);
       console.log(res);
+      let cart = [];
+      if (res.status === 200) {
+        res?.data?.cart?.forEach((element) => {
+          if (element?.cartItems?.length > 0) {
+            element?.cartItems?.forEach((cartItem) => {
+              cart.push(cartItem);
+            });
+          }
+        });
+        dispatch(
+          setCart({
+            cart: cart,
+          })
+        );
+        // console.log("Number of cart", cart);
+      }
       setCartData({
         data: res?.data?.cart,
         message: "Data Fetched successfully",
