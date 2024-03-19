@@ -64,6 +64,35 @@ const SocialLinkModal1 = ({ showSocilMdl1, setShowSocilMdl1, socialLink }) => {
     setLinks([...links, newLink]);
   };
 
+  //function to remove the social media link
+
+  async function removeSocailLink(socialLinkId) {
+    try {
+      startGloablLoading();
+      const res = await userApi.removeSocialLink(
+        JSON.parse(auth?.token),
+        socialLinkId
+      );
+      console.log(res);
+      if (res.status === 200) {
+        toast.success(res?.data?.message);
+        dispatch(
+          updateProfile({
+            user: JSON.stringify(res?.data?.data),
+          })
+        );
+        setLinks(res?.data?.data?.socialLinks || []);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(
+        error?.response?.data?.error || error?.response?.data?.message
+      );
+    } finally {
+      stopGlobalLoading();
+    }
+  }
+
   return (
     <>
       <div>
@@ -86,6 +115,7 @@ const SocialLinkModal1 = ({ showSocilMdl1, setShowSocilMdl1, socialLink }) => {
                 register={register}
                 index={index}
                 setValue={setValue}
+                removeSocailLink={removeSocailLink}
               />
             ))}
 

@@ -154,6 +154,18 @@ export const userApi = {
       data: data,
     });
   },
+  removeSocialLink: async (token, socialLinkId) => {
+    return await api.request({
+      url: "/user/social-links/remove",
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      data: {
+        socialLinkId: socialLinkId,
+      },
+    });
+  },
 };
 
 export const cartApi = {

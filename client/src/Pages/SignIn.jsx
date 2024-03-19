@@ -8,6 +8,7 @@ import { useLoading } from "../features/loadingHooks";
 import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 import { login } from "../features/authSlice";
+import { setCart } from "../features/cartSlice";
 
 const SignIn = () => {
   const location = useLocation();
@@ -43,7 +44,11 @@ const SignIn = () => {
             token: JSON.stringify(data.token),
           })
         );
-
+        dispatch(
+          setCart({
+            cart: res?.data?.user?.cart,
+          })
+        );
         localStorage.setItem("user-id", data.token);
         navigate(from, { replace: true });
       }

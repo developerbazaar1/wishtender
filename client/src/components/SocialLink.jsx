@@ -1,20 +1,32 @@
-const { useState } = require("react");
-const { FaTiktok, FaFacebookF, FaInstagram } = require("react-icons/fa");
-const { FaXTwitter } = require("react-icons/fa6");
-const { IoLinkOutline } = require("react-icons/io5");
+import { RxCrossCircled } from "react-icons/rx";
+import { useState } from "react";
+import { FaTiktok, FaFacebookF, FaInstagram } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
+import { IoLinkOutline } from "react-icons/io5";
 
-const SocialLink = ({ linkItem, register, index, setValue }) => {
+const SocialLink = ({
+  linkItem,
+  register,
+  index,
+  setValue,
+  removeSocailLink,
+}) => {
   const [selectedSocial, setSelectedSocial] = useState(linkItem?.platform);
-  // console.log("social Link item in link components", linkItem);
+
   const handleSocialLinkSelect = (socialNetwork) => {
-    // console.log(socialNetwork);
     setValue(`socialLinks.${index}.platform`, socialNetwork);
     setSelectedSocial(socialNetwork);
   };
 
   return (
     <div className="my-3">
-      <div className="socal-links">
+      <div className="socal-links position-relative">
+        <span
+          className="remove-social-btn"
+          onClick={() => removeSocailLink(linkItem._id)}
+        >
+          <RxCrossCircled size={20} color="red" />
+        </span>
         <div className="social-top">
           <div className="left dropdown">
             <button

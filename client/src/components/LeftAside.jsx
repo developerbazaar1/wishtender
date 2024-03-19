@@ -16,10 +16,12 @@ import useFollowed from "../services/useFollowed";
 import { useDispatch } from "react-redux";
 import { setFollowed } from "../features/fetchFollowedSlice";
 import { toast } from "react-toastify";
+import { useCart } from "../services/customHooks";
 
 const LeftAside = () => {
   const [isOpen, setIsOpen] = useState(false);
-
+  const cartLength = useCart()?.cart?.length;
+  // console.log("Left aside", cart);
   const toggleNav = () => {
     setIsOpen(!isOpen);
   };
@@ -101,7 +103,10 @@ const LeftAside = () => {
               <div className="div-5">
                 {cartIcon}
                 <span>
-                  Cart &nbsp;<Badge bg="dark"></Badge>{" "}
+                  Cart &nbsp;
+                  <Badge bg="black" className="rounded-circle">
+                    {cartLength > 0 && cartLength}
+                  </Badge>{" "}
                 </span>
               </div>
             </NavLink>

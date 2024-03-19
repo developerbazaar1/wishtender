@@ -17,6 +17,7 @@ const CartGoalDetails = ({ cart, updateCart, globalLoading, setRefresh }) => {
       startGloablLoading();
       const res = await cartApi.deleteCart(token, cart?._id);
       if (res?.status === 200) {
+        console.log(res);
         toast.success(res?.data?.message);
         setRefresh((val) => !val);
       }
@@ -99,7 +100,12 @@ const CartGoalDetails = ({ cart, updateCart, globalLoading, setRefresh }) => {
       </td>
       <td className="product-prics t-data">
         <small className="est">Est.</small>{" "}
-        <span>CA${parseFloat(cart?.amount)?.toFixed(2)} </span>{" "}
+        <span>
+          CA$
+          {cart?.quantity
+            ? (parseFloat(cart?.amount) * parseFloat(cart?.quantity)).toFixed(2)
+            : parseFloat(cart?.amount)}
+        </span>
         <span
           className="model mx-1"
           role="button"
