@@ -1,25 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useLocation, useParams } from "react-router-dom";
-import { cartApi, fighterApi } from "../config/axiosUtils";
+import { useNavigate, useParams } from "react-router-dom";
+import { fighterApi } from "../config/axiosUtils";
 import { useLoading } from "../features/loadingHooks";
 import { toast } from "react-toastify";
-import { castGoalData, imgBasePath } from "../utils/Helper";
-import { useDispatch } from "react-redux";
-import { setCart } from "../features/cartSlice";
+import { imgBasePath } from "../utils/Helper";
+
 import {
   GoalCrowdDescription,
   GoalSingleDescription,
   GoalSubDescription,
 } from "../components/GoalTypeDescription";
 import { useForm } from "react-hook-form";
-const GoalsDetails = ({ token }) => {
-  const goalId = useParams()?.goalId;
+const FighterGoalDetails = ({ token }) => {
+  const param = useParams();
   const { globalLoading, startGloablLoading, stopGlobalLoading } = useLoading();
-  const dispatch = useDispatch();
   const {
     register,
-    watch,
-    setError,
     clearErrors,
     formState: { errors },
   } = useForm();
@@ -36,7 +32,7 @@ const GoalsDetails = ({ token }) => {
   const loadGloadDetails = async () => {
     startGloablLoading();
     try {
-      const res = await fighterApi.fetchGoalDetails(token, goalId);
+      const res = await fighterApi.fetchGoalDetails(token, param?.goalId);
       // console.log("goal data", res?.data);
       if (res?.status === 200) {
         setData({
@@ -68,52 +64,16 @@ const GoalsDetails = ({ token }) => {
     }
   };
 
-  const addGoalToCart = async (type) => {
-    const contributionAmount = watch("amount");
-
-    // check and set the error if goal type is crowd and amount is not entred
-    if (data?.goals?.goalType === "crowd") {
-      if (
-        contributionAmount !== "0" &&
-        contributionAmount !== "" &&
-        !isNaN(contributionAmount)
-      ) {
-        clearErrors();
-      }
-      if (contributionAmount === "0" || contributionAmount === "") {
-        setError("amount", {
-          type: String,
-          message: "Amount must be greater than 0",
-        });
-      }
-
-      if (isNaN(contributionAmount)) {
-        setError("amount", {
-          type: String,
-          message: "Amount must be a number",
-        });
-        return;
-      }
-    }
-    startGloablLoading();
+  const handleDeleteButton = async () => {
     try {
-      const goalData = castGoalData(data?.goals, contributionAmount);
-      const res = await cartApi.addToCart(token, goalData);
-      if (res?.status === 200) {
-        toast.success(res?.data?.message);
-        dispatch(
-          setCart({
-            cart: res?.data?.cart,
-          })
-        );
-        if (type === "checkout") {
-          navigate("/fighter/cart");
-        } else {
-          navigate(-1);
-        }
+      startGloablLoading();
+      const res = await fighterApi.deleteGoal(token, param?.goalId);
+      if (res.status === 200) {
+        navigate("/fighter");
       }
+      //   console.log(res);
     } catch (e) {
-      // console.log(e);
+      //   console.log(e);
       toast.error(e?.response?.data?.message || e?.response?.data?.error);
     } finally {
       stopGlobalLoading();
@@ -122,7 +82,7 @@ const GoalsDetails = ({ token }) => {
 
   useEffect(() => {
     loadGloadDetails();
-  }, [goalId]);
+  }, [param?.goalId]);
 
   // console.log(data?.goals);
   // console.log("This is Error", errors);
@@ -192,20 +152,20 @@ const GoalsDetails = ({ token }) => {
             )}
 
             <button
-              onClick={() => addGoalToCart("continue")}
+              onClick={() => {
+                alert("Working on it !");
+              }}
               className="addGoalToCart"
               disabled={globalLoading}
             >
-              {globalLoading
-                ? "Loading..."
-                : "Add to Cart and Continue Shopping"}
+              Edit
             </button>
             <button
               disabled={globalLoading}
               className="addToCartCheckout"
-              onClick={() => addGoalToCart("checkout")}
+              onClick={() => handleDeleteButton()}
             >
-              {globalLoading ? "Loading..." : "Add to Cart and Checkout"}
+              {globalLoading ? "Loading..." : "Delete"}
             </button>
           </div>
         </div>
@@ -214,4 +174,4 @@ const GoalsDetails = ({ token }) => {
   );
 };
 
-export default GoalsDetails;
+export default FighterGoalDetails;

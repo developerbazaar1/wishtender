@@ -52,6 +52,7 @@ import SubscriptionActivity from "./components/SubscriptionActivity";
 import SurpriseActivity from "./components/SurpriseActivity";
 import RankingLyout from "./Pages/RankingLyout";
 import RankingPage from "./Pages/Ranking/RankingPage";
+import FighterGoalDetails from "./components/FighterGoalDetails";
 function App() {
   const dispatch = useDispatch();
   const [categories, setCategories] = useState([]);
@@ -158,8 +159,12 @@ function App() {
               errorElement: <>{}</>,
             },
             {
-              path: "goal-detail",
+              path: ":userName/:goalId",
               element: <GoalsDetails token={JSON.parse(auth?.token)} />,
+            },
+            {
+              path: "goal-detail/:goalId",
+              element: <FighterGoalDetails token={JSON.parse(auth?.token)} />,
             },
             {
               path: "account",

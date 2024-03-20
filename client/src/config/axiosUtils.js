@@ -57,6 +57,26 @@ export const fighterApi = {
       data: goalData,
     });
   },
+  editGoal: async (token, goalId, data) => {
+    return await api.request({
+      url: `/goal/edit/${goalId}`,
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      data: data,
+    });
+  },
+  deleteGoal: async (token, goalId) => {
+    return await api.request({
+      url: `/goal/delete/${goalId}`,
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  },
 };
 
 export const fetchCategory = async () => {

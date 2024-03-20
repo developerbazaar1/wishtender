@@ -3,16 +3,16 @@ import LocaProgressBar from "./ProgressBar";
 import { Link } from "react-router-dom";
 import { AiOutlineLink } from "react-icons/ai";
 import { FaXTwitter } from "react-icons/fa6";
-import { DragButton } from "../elements/dragButton";
 import { FundedPercentage, imgBasePath } from "../utils/Helper";
 
-const OtherFighterGoals = ({ goals, currency }) => {
+const OtherFighterGoals = ({ goals, currency, userName }) => {
+  console.log(goals);
   return (
     <section className="goal-card-section">
       {goals?.map((goal) => (
         <div className="card goal-card" key={goal._id}>
           <Link
-            to="/fighter/goal-detail"
+            to={`/fighter/${userName}/${goal._id}`}
             state={{ goalId: goal?._id }}
             style={{
               textDecoration: "none",

@@ -337,6 +337,7 @@ const OtherFighterProfile = () => {
               <OtherFighterGoals
                 goals={fighterData?.data?.goals}
                 currency={fighterData?.data?.currency}
+                userName={fighterData?.data?.userName}
               />
             ) : (
               <div className="text-center">

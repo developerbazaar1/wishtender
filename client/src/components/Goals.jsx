@@ -31,7 +31,7 @@ const Goals = ({ goals, currency }) => {
                   {...provided.draggableProps}
                 >
                   <Link
-                    to="/fighter/goal-detail"
+                    to={`/fighter/goal-detail/${goal?._id}`}
                     state={{ goalId: goal?._id }}
                     style={{
                       textDecoration: "none",
