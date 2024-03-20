@@ -381,7 +381,11 @@ exports.manageFollow = async (req, res, next) => {
         : { $pull: { followers: userId } };
     await User.findByIdAndUpdate(fighterId, updateQuery);
 
-    const updatedFollower = await User.find({ followers: userId });
+    const updatedFollower = await User.find({ followers: userId })
+      .select(
+        "profilePicture userName firstName lastName promotionCompany profileImage bannerImage"
+      )
+      .exec();
 
     const successMessage =
       action === "follow"

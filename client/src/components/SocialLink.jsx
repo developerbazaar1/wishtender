@@ -1,4 +1,4 @@
-import { RxCrossCircled } from "react-icons/rx";
+import { RiDeleteBinLine } from "react-icons/ri";
 import { useState } from "react";
 import { FaTiktok, FaFacebookF, FaInstagram } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
@@ -24,8 +24,9 @@ const SocialLink = ({
         <span
           className="remove-social-btn"
           onClick={() => removeSocailLink(linkItem._id)}
+          role="button"
         >
-          <RxCrossCircled size={20} color="red" />
+          <RiDeleteBinLine size={20} color="red" />
         </span>
         <div className="social-top">
           <div className="left dropdown">

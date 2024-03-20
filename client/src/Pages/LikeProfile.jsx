@@ -10,7 +10,7 @@ import { setFollowed } from "../features/fetchFollowedSlice";
 import { toast } from "react-toastify";
 import { imgBasePath } from "../utils/Helper";
 
-const LikeProfile = () => {
+const LikeProfile = ({ title }) => {
   const { globalLoading, startGloablLoading, stopGlobalLoading } = useLoading();
   const [youMightLike, setyouMIghtLike] = useState([]);
   const token = JSON.parse(useAuth()?.token);
@@ -98,7 +98,9 @@ const LikeProfile = () => {
             <div className="col-md-12 col-sm-12 col-xs-12 col-lg-12 text-center">
               <div className="page-head">
                 <div className="card-head mb-3 mt-2">
-                  <h5>You Might Like </h5>
+                  <h5> You Might Like </h5>
+                  {title &&
+                    "Currently, you are not following any fighters. Please follow some fighters from suggestions listed below to add them to the Favorites list"}
                 </div>
               </div>
             </div>
